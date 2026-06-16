@@ -3,6 +3,7 @@ import { db, utils } from './db.js';
 
 // Importa os módulos das telas
 import { renderClientes } from './clientes.js';
+import { renderVeiculos } from './veiculos.js';
 
 // Configuração do Menu Lateral
 const menuItems = [
@@ -40,7 +41,6 @@ function buildMenu() {
 
 // Sistema de Roteamento (Muda de tela)
 function navigateTo(viewId) {
-    // 1. Atualiza visual do Menu
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('bg-brand-main/10', 'text-brand-main');
         btn.classList.add('text-gray-400');
@@ -50,17 +50,15 @@ function navigateTo(viewId) {
         }
     });
 
-    // 2. Atualiza o Título da Página
     const currentView = menuItems.find(i => i.id === viewId);
     pageTitle.innerText = currentView.title;
 
-    // 3. Renderiza o HTML da View escolhida
     renderView(viewId);
 }
 
-// Renderiza o conteúdo (Aqui entra o código específico de cada módulo)
+// Renderiza o conteúdo modular
 function renderView(viewId) {
-    appContent.innerHTML = ''; // Limpa a tela atual
+    appContent.innerHTML = ''; 
     const wrapper = document.createElement('div');
     wrapper.className = 'fade-enter h-full flex flex-col';
 
@@ -71,17 +69,20 @@ function renderView(viewId) {
         
         wrapper.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Clientes</p>
-                    <h3 class="text-3xl font-bold text-gray-900">${totalClientes}</h3>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"><i class="ph ph-users"></i> Clientes</p>
+                    <h3 class="text-4xl font-black text-gray-900">${totalClientes}</h3>
                 </div>
-                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Frota</p>
-                    <h3 class="text-3xl font-bold text-gray-900">${totalVeiculos}</h3>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"><i class="ph ph-motorcycle"></i> Frota (Veículos)</p>
+                    <h3 class="text-4xl font-black text-gray-900">${totalVeiculos}</h3>
                 </div>
-                <div class="bg-brand-dark p-6 rounded-xl shadow-md">
-                    <p class="text-xs font-bold text-brand-main uppercase tracking-widest mb-2">Sistema Base</p>
-                    <h3 class="text-xl font-bold text-white mt-2">Pronto para Módulos</h3>
+                <div class="bg-brand-dark p-6 rounded-xl shadow-md flex flex-col justify-between">
+                    <p class="text-xs font-bold text-brand-main uppercase tracking-widest mb-2">Vando Motos ERP</p>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mt-2">Módulos Ativos</h3>
+                        <p class="text-sm text-gray-400">Clientes e Frota integrados.</p>
+                    </div>
                 </div>
             </div>
         `;
@@ -93,7 +94,13 @@ function renderView(viewId) {
         appContent.appendChild(wrapper);
         renderClientes(wrapper); 
 
-    } 
+    }
+    // MÓDULO: VEÍCULOS (FROTA)
+    else if (viewId === 'veiculos') {
+        appContent.appendChild(wrapper);
+        renderVeiculos(wrapper); 
+
+    }
     // MÓDULOS EM DESENVOLVIMENTO
     else {
         wrapper.innerHTML = `
@@ -101,7 +108,7 @@ function renderView(viewId) {
                 <div class="text-center">
                     <i class="ph ph-wrench text-4xl text-gray-400 mb-3"></i>
                     <h3 class="text-lg font-bold text-gray-700">Módulo ${viewId}</h3>
-                    <p class="text-sm text-gray-500">Em desenvolvimento...</p>
+                    <p class="text-sm text-gray-500">Em desenvolvimento. Próxima etapa da engenharia.</p>
                 </div>
             </div>
         `;
@@ -109,5 +116,5 @@ function renderView(viewId) {
     }
 }
 
-// Roda a inicialização assim que o script carrega
+// Inicializa
 initApp();
