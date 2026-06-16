@@ -5,6 +5,7 @@ import { db, utils } from './db.js';
 import { renderClientes } from './clientes.js';
 import { renderVeiculos } from './veiculos.js';
 import { renderContratos } from './contratos.js';
+import { renderFinanceiro } from './financeiro.js';
 
 // Configuração do Menu Lateral
 const menuItems = [
@@ -69,6 +70,9 @@ function renderView(viewId) {
         const totalVeiculos = db.veiculos.length;
         const locacoesAtivas = db.contratos.filter(c => c.status === 'ativo').length;
         
+        // Calcula a receita total no histórico financeiro
+        const receitaTotal = db.financeiro.reduce((acc, curr) => acc + Number(curr.valor), 0);
+        
         wrapper.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
@@ -83,12 +87,10 @@ function renderView(viewId) {
                     <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-2"><i class="ph ph-handshake"></i> Locações Ativas</p>
                     <h3 class="text-4xl font-black text-blue-600">${locacoesAtivas}</h3>
                 </div>
-                <div class="bg-brand-dark p-6 rounded-xl shadow-md flex flex-col justify-between">
-                    <p class="text-xs font-bold text-brand-main uppercase tracking-widest mb-2">Vando Motos ERP</p>
-                    <div>
-                        <h3 class="text-xl font-bold text-white mt-2">Módulos Conectados</h3>
-                        <p class="text-xs text-gray-400 mt-1">Integração relacional ativa.</p>
-                    </div>
+                <div class="bg-brand-dark p-6 rounded-xl shadow-md flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-brand-main/10 rounded-bl-full -mr-4 -mt-4"></div>
+                    <p class="text-xs font-bold text-brand-main uppercase tracking-widest mb-2 relative z-10"><i class="ph ph-wallet"></i> Faturamento</p>
+                    <h3 class="text-2xl font-black text-white relative z-10 mt-2">${utils.formatMoney(receitaTotal)}</h3>
                 </div>
             </div>
         `;
@@ -110,18 +112,10 @@ function renderView(viewId) {
         appContent.appendChild(wrapper);
         renderContratos(wrapper); 
     }
-    // MÓDULOS EM DESENVOLVIMENTO
-    else {
-        wrapper.innerHTML = `
-            <div class="flex items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-                <div class="text-center">
-                    <i class="ph ph-wrench text-4xl text-gray-400 mb-3"></i>
-                    <h3 class="text-lg font-bold text-gray-700">Módulo ${viewId}</h3>
-                    <p class="text-sm text-gray-500">O núcleo de engenharia está trabalhando nisso.</p>
-                </div>
-            </div>
-        `;
+    // MÓDULO: FINANCEIRO (CAIXA)
+    else if (viewId === 'financeiro') {
         appContent.appendChild(wrapper);
+        renderFinanceiro(wrapper); 
     }
 }
 
