@@ -1,6 +1,9 @@
 // Importa o banco de dados e ferramentas
 import { db, utils } from './db.js';
 
+// Importa os módulos das telas
+import { renderClientes } from './clientes.js';
+
 // Configuração do Menu Lateral
 const menuItems = [
     { id: 'dashboard', icon: 'ph-squares-four', title: 'Visão Geral' },
@@ -61,7 +64,7 @@ function renderView(viewId) {
     const wrapper = document.createElement('div');
     wrapper.className = 'fade-enter h-full flex flex-col';
 
-    // Exemplo: Estrutura isolada do Dashboard
+    // MÓDULO: DASHBOARD
     if (viewId === 'dashboard') {
         const totalClientes = db.clientes.length;
         const totalVeiculos = db.veiculos.length;
@@ -82,20 +85,28 @@ function renderView(viewId) {
                 </div>
             </div>
         `;
-    } else {
-        // Tela genérica provisória para os outros botões
+        appContent.appendChild(wrapper);
+
+    } 
+    // MÓDULO: CLIENTES
+    else if (viewId === 'clientes') {
+        appContent.appendChild(wrapper);
+        renderClientes(wrapper); 
+
+    } 
+    // MÓDULOS EM DESENVOLVIMENTO
+    else {
         wrapper.innerHTML = `
             <div class="flex items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
                 <div class="text-center">
                     <i class="ph ph-wrench text-4xl text-gray-400 mb-3"></i>
                     <h3 class="text-lg font-bold text-gray-700">Módulo ${viewId}</h3>
-                    <p class="text-sm text-gray-500">Pronto para receber o código da tabela e formulário.</p>
+                    <p class="text-sm text-gray-500">Em desenvolvimento...</p>
                 </div>
             </div>
         `;
+        appContent.appendChild(wrapper);
     }
-
-    appContent.appendChild(wrapper);
 }
 
 // Roda a inicialização assim que o script carrega
