@@ -3,6 +3,7 @@ import { db, saveDB, utils } from './db.js';
 export function renderClientes(container) {
     container.innerHTML = `
         <div class="flex flex-col h-full fade-enter">
+            <!-- Barra Superior de Ações -->
             <div class="flex justify-between items-center mb-6">
                 <div class="relative w-full max-w-md">
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -13,6 +14,7 @@ export function renderClientes(container) {
                 </button>
             </div>
 
+            <!-- Tabela de Dados Principais -->
             <div class="bg-white border border-gray-200 shadow-soft flex-1 overflow-hidden flex flex-col">
                 <div class="overflow-x-auto flex-1 custom-scroll">
                     <table class="w-full text-left border-collapse whitespace-nowrap text-sm">
@@ -29,6 +31,7 @@ export function renderClientes(container) {
                         <tbody id="tb-clientes" class="divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
+                <!-- Estado Vazio -->
                 <div id="clientes-empty" class="hidden flex-col items-center justify-center py-16 text-center">
                     <i class="ph ph-users text-5xl text-gray-300 mb-3"></i>
                     <p class="text-sm text-gray-500 font-bold uppercase tracking-wider">Base de clientes vazia na Nuvem</p>
@@ -36,9 +39,11 @@ export function renderClientes(container) {
             </div>
         </div>
 
+        <!-- MODAL MASTER: DOSSIÊ DO CLIENTE -->
         <div id="modal-cliente" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity opacity-0">
             <div class="bg-white border border-gray-900 w-full max-w-4xl shadow-2xl overflow-hidden transform scale-95 transition-transform flex flex-col max-h-[90vh]" id="modal-cliente-panel">
                 
+                <!-- Cabeçalho do Modal -->
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                     <div>
                         <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight" id="modal-cliente-title">Dossiê Cadastral</h2>
@@ -47,17 +52,22 @@ export function renderClientes(container) {
                     <button id="btn-fechar-modal" class="text-gray-400 hover:text-red-600 transition p-1"><i class="ph ph-x text-2xl"></i></button>
                 </div>
 
+                <!-- Corpo com 3 Abas -->
                 <div class="bg-gray-100 px-6 border-b border-gray-200 flex gap-2">
-                    <button id="tab-dados" class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-brand-dark text-brand-dark bg-white mt-1">1. Ficha Cadastral</button>
-                    <button id="tab-historico" class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-500 hover:text-gray-800 mt-1">2. Histórico de Locações</button>
+                    <button id="tab-dados" class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-brand-dark text-brand-dark bg-white mt-1 transition-colors">1. Dados Pessoais</button>
+                    <button id="tab-endereco" class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-500 hover:text-gray-800 mt-1 transition-colors">2. Localização (CEP)</button>
+                    <button id="tab-historico" class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-500 hover:text-gray-800 mt-1 transition-colors">3. Histórico de Uso</button>
                 </div>
 
+                <!-- Formulário / Conteúdo -->
                 <form id="form-cliente" class="overflow-y-auto flex-1 p-6 space-y-6 custom-scroll bg-white">
                     <input type="hidden" id="c-id">
                     <input type="hidden" id="c-codigo-gerado">
 
+                    <!-- ABA 1: DADOS PESSOAIS -->
                     <div id="conteudo-tab-dados" class="space-y-6">
                         
+                        <!-- Bloco 1.1: Identificação Técnica -->
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nome Completo / Razão Social *</label>
@@ -76,17 +86,15 @@ export function renderClientes(container) {
                             </div>
                         </div>
 
+                        <!-- Bloco 1.2: Contato Principal -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">WhatsApp Pessoal *</label>
                                 <input type="text" id="c-wpp" required placeholder="(69) 9..." class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none">
                             </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Endereço Residencial/Comercial Completo *</label>
-                                <input type="text" id="c-endereco" required placeholder="Rua, Número, Bairro, Cidade, Ponto de Referência..." class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none">
-                            </div>
                         </div>
 
+                        <!-- Bloco 1.3: As 3 Referências Pessoais exigidas -->
                         <div class="border-t border-gray-200 pt-4">
                             <h3 class="text-xs font-extrabold text-brand-hover uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <i class="ph ph-phone-call text-base"></i> Triagem de Segurança (3 Referências)
@@ -110,34 +118,88 @@ export function renderClientes(container) {
                             </div>
                         </div>
 
+                        <!-- Bloco 1.4: Digitalização de Documentos -->
                         <div class="border-t border-gray-200 pt-4">
                             <h3 class="text-xs font-extrabold text-gray-900 uppercase tracking-widest mb-3">
-                                Arquivos e Anexos Digitais (Imagens)
+                                Arquivo Digital (Identidade / CNH)
                             </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div class="border border-dashed border-gray-300 p-4 flex flex-col justify-between bg-gray-50">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Habilitação (CNH) ou Identidade (RG)</label>
-                                        <input type="file" id="file-cnh" accept="image/*" class="text-xs text-gray-500 file:mr-4 file:py-1 file:px-2 file:border-0 file:bg-brand-dark file:text-brand-main file:font-bold hover:file:bg-black">
-                                    </div>
-                                    <div id="preview-cnh-box" class="mt-3 hidden text-xs font-semibold text-emerald-600 flex items-center gap-1">
-                                        <i class="ph-fill ph-check-circle text-base"></i> Documento Carregado! <button type="button" id="btn-ver-cnh" class="text-brand-hover underline ml-2">Visualizar</button>
-                                    </div>
+                            <div class="border border-dashed border-gray-300 p-4 flex flex-col justify-between bg-gray-50 w-full md:w-1/2">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Habilitação (CNH) ou RG</label>
+                                    <input type="file" id="file-cnh" accept="image/*" class="text-xs text-gray-500 file:mr-4 file:py-1 file:px-2 file:border-0 file:bg-brand-dark file:text-brand-main file:font-bold hover:file:bg-black w-full">
                                 </div>
-
-                                <div class="border border-dashed border-gray-300 p-4 flex flex-col justify-between bg-gray-50">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Comprovante de Residência Atualizado</label>
-                                        <input type="file" id="file-residencia" accept="image/*" class="text-xs text-gray-500 file:mr-4 file:py-1 file:px-2 file:border-0 file:bg-brand-dark file:text-brand-main file:font-bold hover:file:bg-black">
-                                    </div>
-                                    <div id="preview-res-box" class="mt-3 hidden text-xs font-semibold text-emerald-600 flex items-center gap-1">
-                                        <i class="ph-fill ph-check-circle text-base"></i> Comprovante Carregado! <button type="button" id="btn-ver-res" class="text-brand-hover underline ml-2">Visualizar</button>
-                                    </div>
+                                <div id="preview-cnh-box" class="mt-3 hidden text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                                    <i class="ph-fill ph-check-circle text-base"></i> Documento Carregado! <button type="button" id="btn-ver-cnh" class="text-brand-hover underline ml-2">Visualizar</button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- ABA 2: ENDEREÇO (INTEGRAÇÃO VIA CEP) -->
+                    <div id="conteudo-tab-endereco" class="hidden space-y-6">
+                        <div class="bg-brand-light border border-brand-main p-4 flex items-start gap-3">
+                            <i class="ph-fill ph-map-pin text-2xl text-brand-hover"></i>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-900">Busca Automática de CEP</h4>
+                                <p class="text-xs text-gray-600 mt-1">Digite o CEP e o sistema preencherá o logradouro e a cidade usando os dados oficiais dos Correios.</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">CEP *</label>
+                                <input type="text" id="c-cep" required placeholder="00000-000" maxlength="9" class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none font-mono">
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Logradouro (Rua, Av, etc) *</label>
+                                <input type="text" id="c-logradouro" required class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none bg-white">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Número *</label>
+                                <input type="text" id="c-numero" required class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none">
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Complemento (Apto, Bloco, Casa)</label>
+                                <input type="text" id="c-complemento" class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Bairro *</label>
+                                <input type="text" id="c-bairro" required class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Cidade *</label>
+                                <input type="text" id="c-cidade" required class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Estado (UF) *</label>
+                                <input type="text" id="c-uf" required maxlength="2" placeholder="RO" class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none bg-white uppercase font-bold text-center">
+                            </div>
+                        </div>
+
+                        <!-- Anexo Comprovante de Residência -->
+                        <div class="border-t border-gray-200 pt-4">
+                            <h3 class="text-xs font-extrabold text-gray-900 uppercase tracking-widest mb-3">
+                                Comprovante de Endereço Digital
+                            </h3>
+                            <div class="border border-dashed border-gray-300 p-4 flex flex-col justify-between bg-gray-50 w-full md:w-1/2">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Fatura Atualizada (Água, Luz, Internet)</label>
+                                    <input type="file" id="file-residencia" accept="image/*" class="text-xs text-gray-500 file:mr-4 file:py-1 file:px-2 file:border-0 file:bg-brand-dark file:text-brand-main file:font-bold hover:file:bg-black w-full">
+                                </div>
+                                <div id="preview-res-box" class="mt-3 hidden text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                                    <i class="ph-fill ph-check-circle text-base"></i> Comprovante Carregado! <button type="button" id="btn-ver-res" class="text-brand-hover underline ml-2">Visualizar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ABA 3: HISTÓRICO DE LOCAÇÕES DA MOTO -->
                     <div id="conteudo-tab-historico" class="hidden space-y-4">
                         <div class="bg-gray-50 border p-4">
                             <h4 class="text-xs font-bold text-gray-500 uppercase font-mono tracking-wider mb-3">Linha do Tempo de Aluguéis</h4>
@@ -153,20 +215,23 @@ export function renderClientes(container) {
                                         </tr>
                                     </thead>
                                     <tbody id="tb-historico-locacoes" class="divide-y divide-gray-100 text-gray-700 font-medium">
-                                        </tbody>
+                                        <!-- Injetado via JS -->
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Rodapé de Ações do Form -->
                     <div class="pt-4 border-t border-gray-100 flex gap-3 bg-white" id="modal-actions-footer">
                         <button type="button" id="btn-cancelar" class="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition">Cancelar</button>
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-brand-dark text-brand-main font-black hover:bg-black shadow-hard border border-gray-900 transition">Gravar Dossiê</button>
+                        <button type="submit" class="flex-1 px-4 py-2.5 bg-brand-dark text-brand-main font-black hover:bg-black shadow-hard border border-gray-900 transition">Gravar Dossiê Completo</button>
                     </div>
                 </form>
             </div>
         </div>
 
+        <!-- POP-UP LIGHTBOX EXCLUSIVO PARA INSPEÇÃO DE IMAGENS -->
         <div id="lightbox-viewer" class="fixed inset-0 bg-black/90 z-[60] hidden flex flex-col items-center justify-center p-4">
             <button id="btn-fechar-lightbox" class="absolute top-5 right-5 text-white bg-gray-950 px-4 py-2 border border-gray-700 font-bold flex items-center gap-2"><i class="ph ph-x"></i> Fechar Inspeção</button>
             <img id="img-lightbox-src" src="" alt="Inspeção de Documento" class="max-w-full max-h-[85vh] object-contain border-4 border-white shadow-2xl bg-gray-900">
@@ -185,10 +250,22 @@ export function renderClientes(container) {
 
     // Mapeamentos das Abas
     const tabDados = document.getElementById('tab-dados');
+    const tabEndereco = document.getElementById('tab-endereco');
     const tabHistorico = document.getElementById('tab-historico');
+    
     const conTabDados = document.getElementById('conteudo-tab-dados');
+    const conTabEndereco = document.getElementById('conteudo-tab-endereco');
     const conTabHistorico = document.getElementById('conteudo-tab-historico');
     const footerActions = document.getElementById('modal-actions-footer');
+
+    // Mapeamento de Endereço Automático
+    const inputCep = document.getElementById('c-cep');
+    const inputLogradouro = document.getElementById('c-logradouro');
+    const inputNumero = document.getElementById('c-numero');
+    const inputComplemento = document.getElementById('c-complemento');
+    const inputBairro = document.getElementById('c-bairro');
+    const inputCidade = document.getElementById('c-cidade');
+    const inputUf = document.getElementById('c-uf');
 
     // Mapeamento de Anexos
     const fileCnh = document.getElementById('file-cnh');
@@ -204,28 +281,85 @@ export function renderClientes(container) {
     let imgCnhBase64 = "";
     let imgResBase64 = "";
 
-    // Listener para alterar Label Dinamicamente entre CPF e CNPJ
+    // ------------------------------------------------------------------------
+    // API VIACEP - BUSCA DE ENDEREÇO
+    // ------------------------------------------------------------------------
+    
+    // Máscara de CEP (00000-000)
+    inputCep.addEventListener('input', (e) => {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length > 5) {
+            v = v.replace(/^(\d{5})(\d)/, '$1-$2');
+        }
+        e.target.value = v;
+    });
+
+    // Busca ao perder o foco (Blur)
+    inputCep.addEventListener('blur', async (e) => {
+        const cepLimpo = e.target.value.replace(/\D/g, '');
+        if (cepLimpo.length === 8) {
+            inputLogradouro.value = "Buscando...";
+            try {
+                const resposta = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+                const dadosCep = await resposta.json();
+                
+                if (!dadosCep.erro) {
+                    inputLogradouro.value = dadosCep.logradouro || '';
+                    inputBairro.value = dadosCep.bairro || '';
+                    inputCidade.value = dadosCep.localidade || '';
+                    inputUf.value = dadosCep.uf || '';
+                    // Joga o cursor do usuário pro campo de Número automaticamente
+                    inputNumero.focus();
+                } else {
+                    inputLogradouro.value = "";
+                    alert("Atenção: CEP não encontrado na base dos Correios.");
+                }
+            } catch (erro) {
+                inputLogradouro.value = "";
+                console.error("Erro na busca de CEP:", erro);
+            }
+        }
+    });
+
+    // ------------------------------------------------------------------------
+    // CONTROLES DE INTERFACE E ABAS
+    // ------------------------------------------------------------------------
+
     selTipo.addEventListener('change', () => {
         lblDoc.innerText = selTipo.value === 'PF' ? 'CPF *' : 'CNPJ *';
     });
 
-    // Controle de Abas Internas do Modal
-    tabDados.addEventListener('click', () => alternarAbas('dados'));
-    tabHistorico.addEventListener('click', () => alternarAbas('historico'));
+    tabDados.addEventListener('click', (e) => { e.preventDefault(); alternarAbas('dados'); });
+    tabEndereco.addEventListener('click', (e) => { e.preventDefault(); alternarAbas('endereco'); });
+    tabHistorico.addEventListener('click', (e) => { e.preventDefault(); alternarAbas('historico'); });
+
+    function resetarEstiloAbas() {
+        const classesInativas = "px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-500 hover:text-gray-800 mt-1 transition-colors";
+        tabDados.className = classesInativas;
+        tabEndereco.className = classesInativas;
+        tabHistorico.className = classesInativas;
+        
+        conTabDados.classList.add('hidden');
+        conTabEndereco.classList.add('hidden');
+        conTabHistorico.classList.add('hidden');
+    }
 
     function alternarAbas(aba) {
+        resetarEstiloAbas();
+        const classesAtivas = "px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-brand-dark text-brand-dark bg-white mt-1 transition-colors";
+
         if (aba === 'dados') {
-            tabDados.className = "px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-brand-dark text-brand-dark bg-white mt-1";
-            tabHistorico.className = "px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-500 hover:text-gray-800 mt-1";
+            tabDados.className = classesAtivas;
             conTabDados.classList.remove('hidden');
-            conTabHistorico.classList.add('hidden');
+            footerActions.classList.remove('hidden');
+        } else if (aba === 'endereco') {
+            tabEndereco.className = classesAtivas;
+            conTabEndereco.classList.remove('hidden');
             footerActions.classList.remove('hidden');
         } else {
-            tabDados.className = "px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-500 hover:text-gray-800 mt-1";
-            tabHistorico.className = "px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-brand-dark text-brand-dark bg-white mt-1";
-            conTabDados.classList.add('hidden');
+            tabHistorico.className = classesAtivas;
             conTabHistorico.classList.remove('hidden');
-            footerActions.classList.add('hidden'); // Histórico é apenas leitura
+            footerActions.classList.add('hidden'); // Histórico é só leitura
             carregarHistoricoLocacoes();
         }
     }
@@ -241,17 +375,9 @@ export function renderClientes(container) {
         });
     }
 
-    escutarArquivo(fileCnh, (base64) => {
-        imgCnhBase64 = base64;
-        boxCnh.classList.remove('hidden');
-    });
+    escutarArquivo(fileCnh, (base64) => { imgCnhBase64 = base64; boxCnh.classList.remove('hidden'); });
+    escutarArquivo(fileRes, (base64) => { imgResBase64 = base64; boxRes.classList.remove('hidden'); });
 
-    escutarArquivo(fileRes, (base64) => {
-        imgResBase64 = base64;
-        boxRes.classList.remove('hidden');
-    });
-
-    // Visualizadores Lightbox
     document.getElementById('btn-ver-cnh').addEventListener('click', () => abrirLightbox(imgCnhBase64));
     document.getElementById('btn-ver-res').addEventListener('click', () => abrirLightbox(imgResBase64));
     document.getElementById('btn-fechar-lightbox').addEventListener('click', () => lightbox.classList.add('hidden'));
@@ -272,7 +398,6 @@ export function renderClientes(container) {
             return;
         }
 
-        // Filtra contratos associados a este cliente
         const contratosDoCliente = db.contratos.filter(c => c.cliente_id === idCliente);
 
         if (contratosDoCliente.length === 0) {
@@ -304,7 +429,7 @@ export function renderClientes(container) {
         
         const filtrados = db.clientes.filter(c => 
             c.nome.toLowerCase().includes(termo) || 
-            c.codigo.toLowerCase().includes(termo) || 
+            (c.codigo && c.codigo.toLowerCase().includes(termo)) || 
             c.cpf_cnpj.includes(termo) || 
             c.wpp.includes(termo)
         );
@@ -320,7 +445,7 @@ export function renderClientes(container) {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors";
                 tr.innerHTML = `
-                    <td class="px-6 py-4 font-mono font-bold text-brand-hover">${c.codigo}</td>
+                    <td class="px-6 py-4 font-mono font-bold text-brand-hover">${c.codigo || '---'}</td>
                     <td class="px-6 py-4 font-bold text-gray-900">${c.nome}</td>
                     <td class="px-6 py-4"><span class="text-xs px-1.5 py-0.5 font-bold bg-gray-900 text-white">${c.tipo}</span></td>
                     <td class="px-6 py-4 text-gray-600 font-mono text-xs">${c.cpf_cnpj}</td>
@@ -362,7 +487,6 @@ export function renderClientes(container) {
         e.preventDefault();
         const id = document.getElementById('c-id').value;
         
-        // GERAÇÃO DE CÓDIGO SEQUENCIAL ENTERPRISE (Padronizado VM-0001)
         let codigoFinal = document.getElementById('c-codigo-gerado').value;
         if (!codigoFinal) {
             const numeroSequencial = db.clientes.length + 1;
@@ -376,7 +500,19 @@ export function renderClientes(container) {
             tipo: selTipo.value,
             cpf_cnpj: document.getElementById('c-cpf-cnpj').value,
             wpp: document.getElementById('c-wpp').value,
-            endereco: document.getElementById('c-endereco').value,
+            
+            // Novos Campos de Endereço Fracionado
+            cep: inputCep.value,
+            logradouro: inputLogradouro.value,
+            numero: inputNumero.value,
+            complemento: inputComplemento.value,
+            bairro: inputBairro.value,
+            cidade: inputCidade.value,
+            uf: inputUf.value.toUpperCase(),
+            
+            // Opcional: mantendo a string inteira para compatibilidade com outros módulos que chamam c.endereco
+            endereco: `${inputLogradouro.value}, ${inputNumero.value} ${inputComplemento.value ? '- ' + inputComplemento.value : ''} - ${inputBairro.value}, ${inputCidade.value}/${inputUf.value.toUpperCase()} - CEP: ${inputCep.value}`,
+
             ref_nome_1: document.getElementById('c-ref-nome-1').value,
             ref_fone_1: document.getElementById('c-ref-fone-1').value,
             ref_nome_2: document.getElementById('c-ref-nome-2').value,
@@ -389,10 +525,8 @@ export function renderClientes(container) {
 
         if (id) {
             const index = db.clientes.findIndex(c => c.id === dados.id);
-            // Preserva anexos antigos se novos não foram upados na edição
             if (!dados.img_cnh) dados.img_cnh = db.clientes[index].img_cnh;
             if (!dados.img_residencia) dados.img_residencia = db.clientes[index].img_residencia;
-            
             db.clientes[index] = dados;
         } else {
             db.clientes.push(dados);
@@ -424,16 +558,24 @@ export function renderClientes(container) {
             const c = db.clientes.find(c => c.id === id);
             
             document.getElementById('c-id').value = c.id;
-            document.getElementById('c-codigo-gerado').value = c.codigo;
-            document.getElementById('modal-cliente-code').innerText = `Código: ${c.codigo}`;
+            document.getElementById('c-codigo-gerado').value = c.codigo || '';
+            document.getElementById('modal-cliente-code').innerText = `Código: ${c.codigo || 'Legado'}`;
             
             document.getElementById('c-nome').value = c.nome;
-            selTipo.value = c.tipo;
-            lblDoc.innerText = c.tipo === 'PF' ? 'CPF *' : 'CNPJ *';
+            selTipo.value = c.tipo || 'PF';
+            lblDoc.innerText = selTipo.value === 'PF' ? 'CPF *' : 'CNPJ *';
             
             document.getElementById('c-cpf-cnpj').value = c.cpf_cnpj;
             document.getElementById('c-wpp').value = c.wpp;
-            document.getElementById('c-endereco').value = c.endereco || '';
+            
+            // Povoando Endereço (Suporte a clientes velhos que só tinham o campo 'endereco' unificado)
+            inputCep.value = c.cep || '';
+            inputLogradouro.value = c.logradouro || (c.endereco ? c.endereco : ''); // Fallback seguro
+            inputNumero.value = c.numero || '';
+            inputComplemento.value = c.complemento || '';
+            inputBairro.value = c.bairro || '';
+            inputCidade.value = c.cidade || '';
+            inputUf.value = c.uf || '';
             
             document.getElementById('c-ref-nome-1').value = c.ref_nome_1 || '';
             document.getElementById('c-ref-fone-1').value = c.ref_fone_1 || '';
