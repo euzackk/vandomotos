@@ -1,9 +1,10 @@
-// Importa o banco de dados e ferramentas
+// Importa o banco de dados e ferramentas globais
 import { db, utils } from './db.js';
 
 // Importa os módulos das telas
 import { renderClientes } from './clientes.js';
 import { renderVeiculos } from './veiculos.js';
+import { renderContratos } from './contratos.js';
 
 // Configuração do Menu Lateral
 const menuItems = [
@@ -66,22 +67,27 @@ function renderView(viewId) {
     if (viewId === 'dashboard') {
         const totalClientes = db.clientes.length;
         const totalVeiculos = db.veiculos.length;
+        const locacoesAtivas = db.contratos.filter(c => c.status === 'ativo').length;
         
         wrapper.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"><i class="ph ph-users"></i> Clientes</p>
                     <h3 class="text-4xl font-black text-gray-900">${totalClientes}</h3>
                 </div>
                 <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"><i class="ph ph-motorcycle"></i> Frota (Veículos)</p>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"><i class="ph ph-motorcycle"></i> Patrimônio</p>
                     <h3 class="text-4xl font-black text-gray-900">${totalVeiculos}</h3>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between border-l-4 border-l-blue-500">
+                    <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-2"><i class="ph ph-handshake"></i> Locações Ativas</p>
+                    <h3 class="text-4xl font-black text-blue-600">${locacoesAtivas}</h3>
                 </div>
                 <div class="bg-brand-dark p-6 rounded-xl shadow-md flex flex-col justify-between">
                     <p class="text-xs font-bold text-brand-main uppercase tracking-widest mb-2">Vando Motos ERP</p>
                     <div>
-                        <h3 class="text-xl font-bold text-white mt-2">Módulos Ativos</h3>
-                        <p class="text-sm text-gray-400">Clientes e Frota integrados.</p>
+                        <h3 class="text-xl font-bold text-white mt-2">Módulos Conectados</h3>
+                        <p class="text-xs text-gray-400 mt-1">Integração relacional ativa.</p>
                     </div>
                 </div>
             </div>
@@ -93,13 +99,16 @@ function renderView(viewId) {
     else if (viewId === 'clientes') {
         appContent.appendChild(wrapper);
         renderClientes(wrapper); 
-
     }
     // MÓDULO: VEÍCULOS (FROTA)
     else if (viewId === 'veiculos') {
         appContent.appendChild(wrapper);
         renderVeiculos(wrapper); 
-
+    }
+    // MÓDULO: CONTRATOS (LOCAÇÕES)
+    else if (viewId === 'contratos') {
+        appContent.appendChild(wrapper);
+        renderContratos(wrapper); 
     }
     // MÓDULOS EM DESENVOLVIMENTO
     else {
@@ -108,7 +117,7 @@ function renderView(viewId) {
                 <div class="text-center">
                     <i class="ph ph-wrench text-4xl text-gray-400 mb-3"></i>
                     <h3 class="text-lg font-bold text-gray-700">Módulo ${viewId}</h3>
-                    <p class="text-sm text-gray-500">Em desenvolvimento. Próxima etapa da engenharia.</p>
+                    <p class="text-sm text-gray-500">O núcleo de engenharia está trabalhando nisso.</p>
                 </div>
             </div>
         `;
