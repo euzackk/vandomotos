@@ -1,5 +1,5 @@
-// Importa o banco de dados e ferramentas globais
-import { db, utils } from './db.js';
+// Importa o banco de dados, ferramentas e a nova função de Nuvem
+import { db, utils, loadDB } from './db.js';
 
 // Importa os módulos das telas
 import { renderClientes } from './clientes.js';
@@ -21,11 +21,16 @@ const menuContainer = document.getElementById('main-menu');
 const pageTitle = document.getElementById('page-title');
 const appContent = document.getElementById('app-content');
 
-// Inicia o Sistema
-function initApp() {
+// Inicia o Sistema (Agora de forma Sincronizada com o Google)
+async function initApp() {
     document.getElementById('current-date').innerText = new Date().toLocaleDateString('pt-BR');
+    
+    // Trava a tela até baixar tudo do servidor
+    pageTitle.innerText = "Sincronizando com a Nuvem...";
+    await loadDB();
+    
     buildMenu();
-    navigateTo('dashboard'); // Tela inicial padrão
+    navigateTo('dashboard'); // Libera a tela inicial
 }
 
 // Constrói o menu dinamicamente
@@ -69,8 +74,6 @@ function renderView(viewId) {
         const totalClientes = db.clientes.length;
         const totalVeiculos = db.veiculos.length;
         const locacoesAtivas = db.contratos.filter(c => c.status === 'ativo').length;
-        
-        // Calcula a receita total no histórico financeiro
         const receitaTotal = db.financeiro.reduce((acc, curr) => acc + Number(curr.valor), 0);
         
         wrapper.innerHTML = `
@@ -96,28 +99,20 @@ function renderView(viewId) {
         `;
         appContent.appendChild(wrapper);
 
-    } 
-    // MÓDULO: CLIENTES
-    else if (viewId === 'clientes') {
+    } else if (viewId === 'clientes') {
         appContent.appendChild(wrapper);
         renderClientes(wrapper); 
-    }
-    // MÓDULO: VEÍCULOS (FROTA)
-    else if (viewId === 'veiculos') {
+    } else if (viewId === 'veiculos') {
         appContent.appendChild(wrapper);
         renderVeiculos(wrapper); 
-    }
-    // MÓDULO: CONTRATOS (LOCAÇÕES)
-    else if (viewId === 'contratos') {
+    } else if (viewId === 'contratos') {
         appContent.appendChild(wrapper);
         renderContratos(wrapper); 
-    }
-    // MÓDULO: FINANCEIRO (CAIXA)
-    else if (viewId === 'financeiro') {
+    } else if (viewId === 'financeiro') {
         appContent.appendChild(wrapper);
         renderFinanceiro(wrapper); 
     }
 }
 
-// Inicializa
+// Iniciação disparada
 initApp();
