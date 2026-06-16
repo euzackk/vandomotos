@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vando Motos | ERP System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Vando Motos | ERP Enterprise</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,42 +12,70 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { brand: { dark: '#0f172a', main: '#f5b041', hover: '#d68910', light: '#fdf8f0' } }
+                    colors: { 
+                        brand: { 
+                            dark: '#0a0a0a',      // Preto absoluto da logo
+                            darker: '#000000',    // Fundo do menu
+                            main: '#facc15',      // Amarelo vibrante da logo
+                            hover: '#eab308',     // Amarelo fechado para botões
+                            light: '#fefce8'      // Fundo sutil
+                        } 
+                    },
+                    // O "Hack" Enterprise: Força todas as bordas a serem quase retas (2px) ou totalmente quadradas
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '0px',
+                        DEFAULT: '2px',
+                        'md': '2px',
+                        'lg': '2px',
+                        'xl': '2px',
+                        '2xl': '2px',
+                        '3xl': '2px',
+                        'full': '9999px' // Mantém apenas para avatares redondos
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'hard': '4px 4px 0px 0px rgba(0, 0, 0, 0.9)' // Sombra agressiva de design moderno
+                    }
                 }
             }
         }
     </script>
     <link rel="stylesheet" href="./assets/css/style.css">
 </head>
-<body class="bg-gray-50 text-gray-800 h-screen flex overflow-hidden antialiased">
+<body class="bg-gray-100 text-gray-900 h-screen flex overflow-hidden antialiased selection:bg-brand-main selection:text-black">
 
-    <aside class="w-64 bg-brand-dark flex flex-col shrink-0 text-white shadow-xl z-20">
-        <div class="h-16 flex items-center px-6 border-b border-gray-800 bg-black/20">
-            <div class="w-8 h-8 bg-brand-main rounded flex items-center justify-center font-bold text-brand-dark mr-3">V</div>
-            <div>
-                <h1 class="font-bold tracking-wide text-sm">VANDO <span class="text-brand-main">MOTOS</span></h1>
-                <p class="text-[10px] text-gray-400 uppercase tracking-widest">ERP Enterprise</p>
-            </div>
+    <aside class="w-64 bg-brand-darker flex flex-col shrink-0 text-white border-r border-gray-800 z-20 relative">
+        <div class="h-24 flex items-center justify-center border-b border-gray-900 bg-brand-dark p-4">
+            <img src="./assets/img/logo.png" alt="Vando Motos Logo" class="max-h-full w-auto object-contain drop-shadow-md">
         </div>
         
-        <nav class="p-4 space-y-1 flex-1" id="main-menu">
+        <nav class="p-5 space-y-1.5 flex-1 overflow-y-auto custom-scroll" id="main-menu">
             </nav>
         
-        <div class="p-4 border-t border-gray-800 text-xs text-gray-400 text-center">
-            Versão 1.0.0
+        <div class="p-5 border-t border-gray-900 bg-brand-dark text-xs flex justify-between items-center">
+            <span class="text-gray-500 font-mono tracking-widest uppercase">ERP Core v2.0</span>
+            <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" title="Sistema Online"></div>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0 z-10 shadow-sm">
-            <h2 id="page-title" class="text-lg font-bold text-gray-800">Carregando...</h2>
-            <div class="flex items-center gap-3">
-                <span class="text-sm font-medium text-gray-600" id="current-date"></span>
-                <div class="w-8 h-8 rounded-full bg-brand-light border border-brand-main text-brand-main flex items-center justify-center font-bold text-sm">IM</div>
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 relative">
+        
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0 z-10 shadow-sm backdrop-blur-md bg-white/90">
+            <h2 id="page-title" class="text-lg font-extrabold text-gray-900 uppercase tracking-tight">Carregando Módulos...</h2>
+            
+            <div class="flex items-center gap-5">
+                <div class="text-right hidden md:block">
+                    <p class="text-sm font-bold text-gray-800 leading-none">Operação Local</p>
+                    <span class="text-xs text-gray-500 font-medium" id="current-date"></span>
+                </div>
+                <div class="w-10 h-10 bg-brand-dark text-brand-main flex items-center justify-center font-black text-sm border-2 border-brand-main shadow-sm">
+                    IM
+                </div>
             </div>
         </header>
 
-        <div class="flex-1 overflow-auto p-8 relative" id="app-content">
+        <div class="flex-1 overflow-auto p-6 md:p-10 relative custom-scroll" id="app-content">
             </div>
     </main>
 
