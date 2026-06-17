@@ -151,17 +151,14 @@ export function renderFinanceiro(container) {
         </div>
     `;
 
-    // Elementos DOM
     const listaReceber = document.getElementById('lista-receber');
     const tbHistorico = document.getElementById('tb-historico');
     const qtdCobrancas = document.getElementById('qtd-cobrancas');
     
-    // Dashboards
     const dashSaldo = document.getElementById('dash-saldo');
     const dashEntradas = document.getElementById('dash-entradas');
     const dashSaidas = document.getElementById('dash-saidas');
 
-    // Modais
     const modalBaixa = document.getElementById('modal-baixa');
     const modalBaixaPanel = document.getElementById('modal-baixa-panel');
     const formBaixa = document.getElementById('form-baixa');
@@ -170,7 +167,6 @@ export function renderFinanceiro(container) {
     const modalLanPanel = document.getElementById('modal-lancamento-panel');
     const formLan = document.getElementById('form-lancamento');
 
-    // Elementos do Formulário de Baixa
     const bxValorExtra = document.getElementById('bx-valor-extra');
     const bxDisplayTotal = document.getElementById('bx-display-total');
 
@@ -178,19 +174,18 @@ export function renderFinanceiro(container) {
         listaReceber.innerHTML = '';
         tbHistorico.innerHTML = '';
 
-        // 1. CARREGAR COBRANÇAS (Módulo de Contratos)
         const contratosAtivos = db.contratos.filter(c => c.status === 'ativo');
         contratosAtivos.sort((a, b) => new Date(a.vencimento || a.data_fim) - new Date(b.vencimento || b.data_fim));
         
-        qtdCobrancas.innerText = \`\${contratosAtivos.length} ATIVAS\`;
+        qtdCobrancas.innerText = `${contratosAtivos.length} ATIVAS`;
 
         if (contratosAtivos.length === 0) {
-            listaReceber.innerHTML = \`
+            listaReceber.innerHTML = `
                 <div class="text-center py-10">
                     <i class="ph ph-check-circle text-5xl text-gray-200 mb-2"></i>
                     <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Nenhuma cobrança ativa no momento.</p>
                 </div>
-            \`;
+            `;
         } else {
             const hoje = new Date();
             hoje.setHours(0,0,0,0);
@@ -199,7 +194,6 @@ export function renderFinanceiro(container) {
                 const cli = db.clientes.find(x => x.id === c.cliente_id) || { nome: 'Desconhecido' };
                 const vei = db.veiculos.find(x => x.id === c.veiculo_id) || { placa: '---' };
                 
-                // Fallback para caso o contrato seja da versão antiga do sistema (usava 'data_fim' em vez de 'vencimento')
                 const dataCobrar = c.vencimento ? c.vencimento : c.data_fim;
                 const dataVenc = new Date(dataCobrar);
                 dataVenc.setMinutes(dataVenc.getMinutes() + dataVenc.getTimezoneOffset());
@@ -207,53 +201,51 @@ export function renderFinanceiro(container) {
 
                 let statusCor = 'border-gray-200 bg-white';
                 let iconeStatus = '<i class="ph-fill ph-clock text-gray-400 text-xl"></i>';
-                let tagStatus = \`<span class="text-[10px] text-gray-500 font-bold ml-2">Vence: \${utils.formatDate(dataCobrar)}</span>\`;
+                let tagStatus = `<span class="text-[10px] text-gray-500 font-bold ml-2">Vence: ${utils.formatDate(dataCobrar)}</span>`;
 
                 if (dataVenc < hoje) {
                     statusCor = 'border-red-500 bg-red-50/50';
                     iconeStatus = '<i class="ph-fill ph-warning-circle text-red-500 text-xl"></i>';
-                    tagStatus = \`<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 font-bold uppercase tracking-wider ml-2 shadow-sm">Atrasado (\${utils.formatDate(dataCobrar)})</span>\`;
+                    tagStatus = `<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 font-bold uppercase tracking-wider ml-2 shadow-sm">Atrasado (${utils.formatDate(dataCobrar)})</span>`;
                 } else if (dataVenc.getTime() === hoje.getTime()) {
                     statusCor = 'border-brand-main bg-brand-light';
                     iconeStatus = '<i class="ph-fill ph-warning text-brand-hover text-xl"></i>';
-                    tagStatus = \`<span class="text-[10px] bg-brand-hover text-black px-1.5 py-0.5 font-bold uppercase tracking-wider ml-2 shadow-sm">Vence Hoje</span>\`;
+                    tagStatus = `<span class="text-[10px] bg-brand-hover text-black px-1.5 py-0.5 font-bold uppercase tracking-wider ml-2 shadow-sm">Vence Hoje</span>`;
                 }
 
-                listaReceber.innerHTML += \`
-                    <div class="border \${statusCor} p-4 flex justify-between items-center transition-all hover:shadow-soft group">
+                listaReceber.innerHTML += `
+                    <div class="border ${statusCor} p-4 flex justify-between items-center transition-all hover:shadow-soft group">
                         <div class="flex items-start gap-3">
-                            <div class="mt-0.5">\${iconeStatus}</div>
+                            <div class="mt-0.5">${iconeStatus}</div>
                             <div>
-                                <div class="font-bold text-gray-900 text-sm uppercase tracking-tight">\${cli.nome} \${tagStatus}</div>
+                                <div class="font-bold text-gray-900 text-sm uppercase tracking-tight">${cli.nome} ${tagStatus}</div>
                                 <div class="text-[11px] text-gray-500 mt-1 flex items-center gap-2">
-                                    <span class="bg-white border border-gray-300 px-1 font-mono font-bold text-gray-800">\${vei.placa}</span>
-                                    <span>Doc: VM-\${c.id.toString().slice(-5)}</span>
+                                    <span class="bg-white border border-gray-300 px-1 font-mono font-bold text-gray-800">${vei.placa}</span>
+                                    <span>Doc: VM-${c.id.toString().slice(-5)}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="flex flex-col items-end gap-2">
-                            <span class="font-black text-gray-900 font-mono">\${utils.formatMoney(c.valor)}</span>
+                            <span class="font-black text-gray-900 font-mono">${utils.formatMoney(c.valor)}</span>
                             <button class="btn-abrir-baixa text-[10px] font-black uppercase tracking-widest bg-gray-900 text-white px-3 py-1.5 hover:bg-black transition shadow-hard border border-gray-900" 
-                                data-id="\${c.id}" data-valor="\${c.valor}" data-nome="\${cli.nome}">
+                                data-id="${c.id}" data-valor="${c.valor}" data-nome="${cli.nome}">
                                 Efetuar Cobrança
                             </button>
                         </div>
                     </div>
-                \`;
+                `;
             });
         }
 
-        // 2. CARREGAR LIVRO CAIXA E DASHBOARD
-        const historico = [...db.financeiro].sort((a, b) => b.id - a.id); // Ordena do mais recente para o mais antigo
+        const historico = [...db.financeiro].sort((a, b) => b.id - a.id); 
         
         let totalEntradas = 0;
         let totalSaidas = 0;
 
         if (historico.length === 0) {
-            tbHistorico.innerHTML = \`<tr><td class="p-6 text-center text-gray-400 text-xs uppercase tracking-widest font-bold">O livro de registos está vazio.</td></tr>\`;
+            tbHistorico.innerHTML = `<tr><td class="p-6 text-center text-gray-400 text-xs uppercase tracking-widest font-bold">O livro de registos está vazio.</td></tr>`;
         } else {
             historico.forEach(f => {
-                // Compatibilidade com a base de dados antiga (assumindo que sem 'tipo', era entrada)
                 const tipoReal = f.tipo || 'entrada'; 
                 const valorNum = Number(f.valor);
 
@@ -270,28 +262,27 @@ export function renderFinanceiro(container) {
                     iconeSeta = '<i class="ph-bold ph-arrow-up-right text-red-500"></i>';
                 }
 
-                tbHistorico.innerHTML += \`
+                tbHistorico.innerHTML += `
                     <tr class="hover:bg-gray-50 transition-colors group">
-                        <td class="px-5 py-4 w-10 text-center">\${iconeSeta}</td>
+                        <td class="px-5 py-4 w-10 text-center">${iconeSeta}</td>
                         <td class="px-5 py-4">
-                            <div class="text-[10px] text-gray-400 font-mono font-bold uppercase">\${utils.formatDate(f.data)}</div>
+                            <div class="text-[10px] text-gray-400 font-mono font-bold uppercase">${utils.formatDate(f.data)}</div>
                         </td>
                         <td class="px-5 py-4">
-                            <div class="text-xs font-bold text-gray-800 uppercase">\${f.descricao}</div>
-                            <div class="text-[10px] text-gray-500 mt-0.5 tracking-wider">\${f.categoria || 'Locação Semanal'}</div>
+                            <div class="text-xs font-bold text-gray-800 uppercase">${f.descricao}</div>
+                            <div class="text-[10px] text-gray-500 mt-0.5 tracking-wider">${f.categoria || 'Locação Semanal'}</div>
                         </td>
                         <td class="px-5 py-4 text-right">
-                            <div class="text-sm font-black font-mono \${corValor}">\${tipoReal === 'entrada' ? '+' : '-'} \${utils.formatMoney(valorNum)}</div>
+                            <div class="text-sm font-black font-mono ${corValor}">${tipoReal === 'entrada' ? '+' : '-'} ${utils.formatMoney(valorNum)}</div>
                         </td>
                         <td class="px-5 py-4 text-right">
-                            <button class="btn-deletar-registo text-gray-300 hover:text-red-500 transition px-2" data-id="\${f.id}" title="Eliminar Registo"><i class="ph-fill ph-trash"></i></button>
+                            <button class="btn-deletar-registo text-gray-300 hover:text-red-500 transition px-2" data-id="${f.id}" title="Eliminar Registo"><i class="ph-fill ph-trash"></i></button>
                         </td>
                     </tr>
-                \`;
+                `;
             });
         }
 
-        // Atualiza Cards do Topo
         dashEntradas.innerText = utils.formatMoney(totalEntradas);
         dashSaidas.innerText = utils.formatMoney(totalSaidas);
         
@@ -305,10 +296,6 @@ export function renderFinanceiro(container) {
             dashSaldo.classList.add('text-gray-900');
         }
     }
-
-    // ------------------------------------------------------------------------
-    // SISTEMA DE BAIXA DE FATURAS (COBRANÇA)
-    // ------------------------------------------------------------------------
     
     function calcularTotalBaixa() {
         const base = Number(document.getElementById('bx-valor-base').value) || 0;
@@ -358,13 +345,11 @@ export function renderFinanceiro(container) {
         const vei = db.veiculos.find(x => x.id === c.veiculo_id) || { placa: '' };
         const cli = db.clientes.find(x => x.id === c.cliente_id) || { nome: 'Cliente' };
 
-        // Construção da Descrição Automática para o Extrato
-        let desc = \`Recebimento Semanal - \${cli.nome} (\${vei.placa})\`;
+        let desc = `Recebimento Semanal - ${cli.nome} (${vei.placa})`;
         if (valorExtra > 0) {
-            desc += \` [+ R$ \${valorExtra} : \${motivoExtra || 'Taxas adicionais'}]\`;
+            desc += ` [+ R$ ${valorExtra} : ${motivoExtra || 'Taxas adicionais'}]`;
         }
 
-        // 1. Lança no Caixa (Entrada)
         const hojeISO = new Date().toISOString().split('T')[0];
         db.financeiro.push({
             id: Date.now(),
@@ -376,7 +361,6 @@ export function renderFinanceiro(container) {
             contrato_id: c.id
         });
 
-        // 2. Renova o vencimento para a próxima semana
         const dataAntigaStr = c.vencimento ? c.vencimento : c.data_fim; 
         const dataAntiga = new Date(dataAntigaStr);
         dataAntiga.setMinutes(dataAntiga.getMinutes() + dataAntiga.getTimezoneOffset());
@@ -388,10 +372,6 @@ export function renderFinanceiro(container) {
         atualizarTela();
         document.getElementById('btn-fechar-baixa').click();
     });
-
-    // ------------------------------------------------------------------------
-    // SISTEMA DE LANÇAMENTO MANUAL (DESPESAS E RECEITAS AVULSAS)
-    // ------------------------------------------------------------------------
 
     document.getElementById('btn-novo-lancamento').addEventListener('click', () => {
         const agora = new Date();
@@ -425,7 +405,6 @@ export function renderFinanceiro(container) {
         document.getElementById('btn-fechar-lancamento').click();
     });
 
-    // Eliminar registo manual do extrato
     tbHistorico.addEventListener('click', (e) => {
         const btnDel = e.target.closest('.btn-deletar-registo');
         if(btnDel) {
@@ -438,6 +417,5 @@ export function renderFinanceiro(container) {
         }
     });
 
-    // Inicialização da View
     atualizarTela();
 }
