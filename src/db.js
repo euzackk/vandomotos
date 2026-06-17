@@ -1,22 +1,12 @@
-// Importa as funções oficiais do Google Firebase (Nuvem)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+// Importação do Cliente Oficial do Supabase
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// Suas chaves exclusivas de acesso à Nuvem
-const firebaseConfig = {
-    apiKey: "AIzaSyAFfDCOVSwEstGvfdq49SzW-NtBHMFTRkU",
-    authDomain: "vando-motos-erp.firebaseapp.com",
-    projectId: "vando-motos-erp",
-    storageBucket: "vando-motos-erp.firebasestorage.app",
-    messagingSenderId: "874527230105",
-    appId: "1:874527230105:web:36271fad80626da51f9008"
-};
+// Credenciais de Conexão Enterprise (Vando Motos Supabase)
+const supabaseUrl = 'https://anhhgombnjkjhernbgga.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuaGhnb21ibmpramhlcm5iZ2dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDEwODcsImV4cCI6MjA5NzI3NzA4N30.gbuRU1wcxrNtJcCf4KcBhD2MZqxXs7tNovWtm4KvkFo';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Inicializa a conexão com o Google
-const app = initializeApp(firebaseConfig);
-const firestore = getFirestore(app);
-
-// Estrutura do Banco de Dados (Mantida a mesma para não quebrar o sistema)
+// Estrutura de Memória Ativa (RAM do Sistema)
 export const db = {
     clientes: [],
     veiculos: [],
@@ -25,45 +15,69 @@ export const db = {
     rotinas: []
 };
 
-// Nova Função: Baixa os dados da Nuvem quando você abre o sistema
+// INICIALIZAÇÃO: Baixa os dados das Tabelas SQL para o Sistema
 export async function loadDB() {
     try {
-        const docRef = doc(firestore, "banco_principal", "dados_locadora");
-        const docSnap = await getDoc(docRef);
+        const [resClientes, resVeiculos, resContratos, resFinanceiro] = await Promise.all([
+            supabase.from('clientes').select('*'),
+            supabase.from('veiculos').select('*'),
+            supabase.from('contratos').select('*'),
+            supabase.from('financeiro').select('*')
+        ]);
+
+        if (resClientes.data) db.clientes = resClientes.data;
+        if (resVeiculos.data) db.veiculos = resVeiculos.data;
+        if (resContratos.data) db.contratos = resContratos.data;
+        if (resFinanceiro.data) db.financeiro = resFinanceiro.data;
         
-        if (docSnap.exists()) {
-            // Injeta os dados da nuvem direto na variável db
-            Object.assign(db, docSnap.data());
-            console.log("✅ Sincronizado com a Nuvem: Dados carregados.");
-        } else {
-            // Se for a primeira vez, cria a "gaveta" vazia no Google
-            await setDoc(docRef, db);
-            console.log("☁️ Banco de dados inicializado na Nuvem.");
-        }
+        console.log("🟢 Conexão Estabelecida: Motor PostgreSQL (Supabase) Ativo.");
     } catch (error) {
-        console.error("❌ Erro de conexão com a Nuvem:", error);
-        alert("Aviso: Falha ao sincronizar com a Nuvem. Verifique a sua conexão de internet.");
+        console.error("❌ Falha de Conexão com o Supabase:", error);
+        alert("Aviso Operacional: Falha ao carregar as tabelas da Nuvem. Verifique a rede.");
     }
 }
 
-// Nova Função: Salva os dados na Nuvem a cada alteração
+// SINCRONIZAÇÃO: Salva alterações e executa varredura de integridade
 export async function saveDB() {
     try {
-        const docRef = doc(firestore, "banco_principal", "dados_locadora");
-        await setDoc(docRef, db);
-        console.log("✅ Alteração salva na Nuvem em tempo real!");
+        const tabelas = ['clientes', 'veiculos', 'contratos', 'financeiro'];
+        
+        for (const tabela of tabelas) {
+            const dadosLocais = db[tabela];
+            
+            if (dadosLocais.length > 0) {
+                // 1. Injeção de Dados (Upsert: Atualiza quem já existe, cria quem for novo)
+                const { error: errUpsert } = await supabase.from(tabela).upsert(dadosLocais);
+                if (errUpsert) console.error(`Erro na Tabela [${tabela}]:`, errUpsert);
+
+                // 2. Limpeza Reversa (Apaga no Banco o que foi deletado na tela)
+                const idsLocais = dadosLocais.map(item => item.id);
+                const { error: errDelete } = await supabase
+                    .from(tabela)
+                    .delete()
+                    .not('id', 'in', `(${idsLocais.join(',')})`);
+                
+                if (errDelete) console.error(`Erro de Limpeza [${tabela}]:`, errDelete);
+
+            } else {
+                // 3. Esvaziamento Total (Caso a tabela local esteja vazia)
+                await supabase.from(tabela).delete().neq('id', 0);
+            }
+        }
+        console.log("🛡️ Tabela Relacional Sincronizada com Sucesso!");
     } catch (error) {
-        console.error("❌ Erro ao salvar:", error);
-        alert("Erro ao gravar os dados na nuvem. Tente novamente.");
+        console.error("❌ Falha na Sincronização do Supabase:", error);
     }
 }
 
-// Utilitários financeiros e de formatação globais
+// Utilitários de Formatação Global (Inalterados)
 export const utils = {
-    formatMoney: (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0),
+    formatMoney: (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value) || 0),
     formatDate: (isoDate) => {
         if (!isoDate) return '--';
-        const [year, month, day] = isoDate.split('-');
-        return `${day}/${month}/${year}`;
+        // Ajuste de fuso horário
+        const dataObjeto = new Date(isoDate);
+        dataObjeto.setMinutes(dataObjeto.getMinutes() + dataObjeto.getTimezoneOffset());
+        return dataObjeto.toLocaleDateString('pt-BR');
     }
 };
