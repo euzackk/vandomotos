@@ -28,25 +28,24 @@ const menuItems = [
 
 // INICIALIZAÇÃO SEGURA DO SISTEMA
 async function initApp() {
-    // 1. Verifica se há uma sessão ativa válida no Supabase
     const session = await auth.getSession();
     
     if (!session) {
-        // Se não houver, mantém a Porta-Forte visível e ativa o formulário
         setupLoginForm();
         return; 
     }
 
-    // 2. Se a chave for válida, liberta o acesso ao sistema
     iniciarSistema();
 }
 
-// GESTÃO DO FORMULÁRIO DE LOGIN
+// GESTÃO DO FORMULÁRIO DE LOGIN COM TELEMETRIA
 function setupLoginForm() {
     formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const senha = document.getElementById('login-senha').value;
+        
+        // O .trim() é a proteção contra "espaços invisíveis" copiados sem querer
+        const email = document.getElementById('login-email').value.trim();
+        const senha = document.getElementById('login-senha').value.trim();
 
         btnLogin.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> A Validar...';
         loginErro.classList.add('hidden');
@@ -56,6 +55,8 @@ function setupLoginForm() {
             iniciarSistema();
         } catch (error) {
             loginErro.classList.remove('hidden');
+            // TELEMETRIA: Vai imprimir a mensagem de erro exata vinda do Supabase
+            loginErro.innerHTML = `Falha de Acesso:<br><span class="text-white font-normal lowercase">${error.message}</span>`;
             btnLogin.innerHTML = '<i class="ph-bold ph-lock-key text-lg"></i> Autenticar Sessão';
         }
     });
@@ -63,19 +64,17 @@ function setupLoginForm() {
 
 // ARRANQUE DO MOTOR ERP
 async function iniciarSistema() {
-    // Transição suave para remover o ecrã negro
     loginScreen.classList.add('opacity-0');
     setTimeout(() => loginScreen.classList.add('hidden'), 500);
 
-    document.getElementById('current-date').innerText = new Date().toLocaleDateString('pt-PT');
+    document.getElementById('current-date').innerText = new Date().toLocaleDateString('pt-BR');
     pageTitle.innerText = "Sincronizando Sistema...";
     
-    // Configura o Botão de Sair
     btnLogout.addEventListener('click', () => {
         if(confirm("Deseja trancar o sistema e encerrar a sessão?")) auth.logout();
     });
 
-    await loadDB(); // Injeta os dados das tabelas SQL na memória
+    await loadDB(); 
     
     buildMenu();
     navigateTo('dashboard');
@@ -118,7 +117,6 @@ function renderView(viewId) {
         const totalVeiculos = db.veiculos.length;
         const locacoesAtivas = db.contratos.filter(c => c.status === 'ativo').length;
         
-        // Faturamento é a soma das Entradas no Módulo Financeiro
         const receitaTotal = db.financeiro
             .filter(f => f.tipo === 'entrada')
             .reduce((acc, curr) => acc + Number(curr.valor), 0);
@@ -151,7 +149,6 @@ function renderView(viewId) {
                 <i class="ph ph-chart-line-up text-5xl text-gray-200 mb-4 relative z-10"></i>
                 <h4 class="text-gray-900 font-black uppercase tracking-widest text-sm relative z-10">Módulo Analítico em Preparação</h4>
                 <p class="text-gray-500 text-xs mt-2 relative z-10">O processamento de gráficos operacionais será libertado na próxima fase.</p>
-                
                 <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-gray-50 to-transparent"></div>
             </div>
         `;
@@ -172,5 +169,4 @@ function renderView(viewId) {
     }
 }
 
-// Dá a ignição no sistema
 initApp();
