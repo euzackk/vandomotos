@@ -1,11 +1,27 @@
 // Importa o banco de dados, motor de autenticação e funções auxiliares
 import { db, utils, loadDB, auth } from './db.js';
 
-// Importa os módulos das telas
 import { renderClientes } from './clientes.js';
 import { renderVeiculos } from './veiculos.js';
 import { renderContratos } from './contratos.js';
 import { renderFinanceiro } from './financeiro.js';
+
+// 📡 TELEMETRIA GLOBAL: Captura erros invisíveis e joga na tela de Login
+window.addEventListener('error', function(event) {
+    const errBox = document.getElementById('login-erro');
+    if(errBox) {
+        errBox.classList.remove('hidden');
+        errBox.innerHTML = `Falha no Código:<br><span class="text-white text-[10px] lowercase">${event.message} (Linha ${event.lineno})</span>`;
+    }
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+    const errBox = document.getElementById('login-erro');
+    if(errBox) {
+        errBox.classList.remove('hidden');
+        errBox.innerHTML = `Falha de Nuvem:<br><span class="text-white text-[10px] lowercase">${event.reason}</span>`;
+    }
+});
 
 // Elementos de Autenticação e Interface Geral
 const loginScreen = document.getElementById('login-screen');
@@ -28,22 +44,26 @@ const menuItems = [
 
 // INICIALIZAÇÃO SEGURA DO SISTEMA
 async function initApp() {
-    const session = await auth.getSession();
-    
-    if (!session) {
-        setupLoginForm();
-        return; 
-    }
+    try {
+        const session = await auth.getSession();
+        
+        if (!session) {
+            setupLoginForm();
+            return; 
+        }
 
-    iniciarSistema();
+        iniciarSistema();
+    } catch (e) {
+        loginErro.classList.remove('hidden');
+        loginErro.innerHTML = `Erro Crítico de Arranque:<br><span class="text-white text-[10px] lowercase">${e.message}</span>`;
+    }
 }
 
-// GESTÃO DO FORMULÁRIO DE LOGIN COM TELEMETRIA
+// GESTÃO DO FORMULÁRIO DE LOGIN
 function setupLoginForm() {
     formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // O .trim() é a proteção contra "espaços invisíveis" copiados sem querer
         const email = document.getElementById('login-email').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
 
@@ -55,8 +75,7 @@ function setupLoginForm() {
             iniciarSistema();
         } catch (error) {
             loginErro.classList.remove('hidden');
-            // TELEMETRIA: Vai imprimir a mensagem de erro exata vinda do Supabase
-            loginErro.innerHTML = `Falha de Acesso:<br><span class="text-white font-normal lowercase">${error.message}</span>`;
+            loginErro.innerHTML = `Acesso Negado:<br><span class="text-white font-normal text-[11px] lowercase">${error.message}</span>`;
             btnLogin.innerHTML = '<i class="ph-bold ph-lock-key text-lg"></i> Autenticar Sessão';
         }
     });
