@@ -1,12 +1,13 @@
 // Importa o banco de dados, motor de autenticação e funções auxiliares
 import { db, utils, loadDB, auth } from './db.js';
 
+// Importa os módulos das telas
 import { renderClientes } from './clientes.js';
 import { renderVeiculos } from './veiculos.js';
 import { renderContratos } from './contratos.js';
 import { renderFinanceiro } from './financeiro.js';
 
-// 📡 TELEMETRIA GLOBAL: Captura erros invisíveis e joga na tela de Login
+// 📡 TELEMETRIA GLOBAL
 window.addEventListener('error', function(event) {
     const errBox = document.getElementById('login-erro');
     if(errBox) {
@@ -46,12 +47,10 @@ const menuItems = [
 async function initApp() {
     try {
         const session = await auth.getSession();
-        
         if (!session) {
             setupLoginForm();
             return; 
         }
-
         iniciarSistema();
     } catch (e) {
         loginErro.classList.remove('hidden');
@@ -63,7 +62,6 @@ async function initApp() {
 function setupLoginForm() {
     formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const email = document.getElementById('login-email').value.trim();
         const senha = document.getElementById('login-senha').value.trim();
 
@@ -126,24 +124,33 @@ function navigateTo(viewId) {
     renderView(viewId);
 }
 
+// ==========================================
+// RENDERIZAÇÃO DE MÓDULOS E DASHBOARD
+// ==========================================
 function renderView(viewId) {
     appContent.innerHTML = ''; 
     const wrapper = document.createElement('div');
     wrapper.className = 'fade-enter h-full flex flex-col';
 
     if (viewId === 'dashboard') {
+        
+        // 1. CÁLCULO DE ESTATÍSTICAS BASE
         const totalClientes = db.clientes.length;
         const totalVeiculos = db.veiculos.length;
         const locacoesAtivas = db.contratos.filter(c => c.status === 'ativo').length;
         
-        const receitaTotal = db.financeiro
-            .filter(f => f.tipo === 'entrada')
-            .reduce((acc, curr) => acc + Number(curr.valor), 0);
+        const receitaTotal = db.financeiro.filter(f => f.tipo === 'entrada').reduce((acc, curr) => acc + Number(curr.valor), 0);
+        const despesaTotal = db.financeiro.filter(f => f.tipo === 'saida').reduce((acc, curr) => acc + Number(curr.valor), 0);
         
+        // 2. CÁLCULOS DA FROTA
+        const veiculosOficina = db.veiculos.filter(v => v.status === 'manutencao').length;
+        const veiculosLivres = totalVeiculos - locacoesAtivas - veiculosOficina;
+
+        // 3. ESTRUTURA HTML DO DASHBOARD
         wrapper.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                 <div class="bg-white p-6 border border-gray-200 shadow-soft flex flex-col justify-between">
-                    <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph ph-users text-lg"></i> Clientes Cadastrados</p>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph ph-users text-lg"></i> Clientes Base</p>
                     <h3 class="text-4xl font-black text-brand-dark">${totalClientes}</h3>
                 </div>
                 
@@ -158,20 +165,129 @@ function renderView(viewId) {
                 </div>
                 
                 <div class="bg-brand-dark p-6 border border-brand-dark shadow-hard flex flex-col justify-between relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-brand-main/5 transform rotate-45 translate-x-10 -translate-y-10 group-hover:bg-brand-main/10 transition-colors"></div>
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-brand-main/5 transform rotate-45 translate-x-10 -translate-y-10"></div>
                     <p class="text-xs font-bold text-brand-main uppercase tracking-widest mb-3 relative z-10 flex items-center gap-2"><i class="ph ph-wallet text-lg"></i> Receita Bruta</p>
                     <h3 class="text-3xl font-black text-white relative z-10 mt-1">${utils.formatMoney(receitaTotal)}</h3>
                 </div>
             </div>
 
-            <div class="bg-white border border-gray-200 p-6 flex-1 flex flex-col justify-center items-center relative overflow-hidden">
-                <i class="ph ph-chart-line-up text-5xl text-gray-200 mb-4 relative z-10"></i>
-                <h4 class="text-gray-900 font-black uppercase tracking-widest text-sm relative z-10">Módulo Analítico em Preparação</h4>
-                <p class="text-gray-500 text-xs mt-2 relative z-10">O processamento de gráficos operacionais será libertado na próxima fase.</p>
-                <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-gray-50 to-transparent"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+                
+                <div class="bg-white border border-gray-200 p-5 shadow-soft flex flex-col">
+                    <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">Status da Frota (Ocupação)</h4>
+                    <div class="relative flex-1 min-h-[250px] w-full flex items-center justify-center">
+                        <canvas id="chart-frota"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-gray-200 p-5 shadow-soft flex flex-col">
+                    <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">Balanço de Caixa Global</h4>
+                    <div class="relative flex-1 min-h-[250px] w-full flex items-center justify-center">
+                        <canvas id="chart-financas"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-gray-200 p-5 shadow-soft flex flex-col">
+                    <h4 class="text-xs font-black text-red-600 uppercase tracking-widest mb-4 border-b border-red-100 pb-2 flex items-center gap-2">
+                        <i class="ph-fill ph-warning-circle text-lg"></i> Radar de Alertas
+                    </h4>
+                    <div id="radar-alertas" class="space-y-2 overflow-y-auto custom-scroll flex-1 pr-2">
+                        </div>
+                </div>
+
             </div>
         `;
         appContent.appendChild(wrapper);
+
+        // 4. RENDERIZAÇÃO DOS GRÁFICOS (Apenas após o HTML estar na tela)
+        setTimeout(() => {
+            // Renderiza Gráfico 1: Frota
+            const ctxFrota = document.getElementById('chart-frota');
+            if(ctxFrota) {
+                new Chart(ctxFrota, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['No Pátio (Livre)', 'Locada', 'Na Oficina'],
+                        datasets: [{
+                            data: [veiculosLivres, locacoesAtivas, veiculosOficina],
+                            backgroundColor: ['#10b981', '#3b82f6', '#f97316'],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        cutout: '70%', 
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, family: 'Inter' } } } } 
+                    }
+                });
+            }
+
+            // Renderiza Gráfico 2: Finanças
+            const ctxFin = document.getElementById('chart-financas');
+            if(ctxFin) {
+                new Chart(ctxFin, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Fluxo Total'],
+                        datasets: [
+                            { label: 'Entradas Brutas', data: [receitaTotal], backgroundColor: '#10b981', borderRadius: 4 },
+                            { label: 'Despesas / Saídas', data: [despesaTotal], backgroundColor: '#ef4444', borderRadius: 4 }
+                        ]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        scales: { y: { beginAtZero: true, display: false } },
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, family: 'Inter' } } } } 
+                    }
+                });
+            }
+
+            // Renderiza Radar de Alertas
+            const radar = document.getElementById('radar-alertas');
+            let alertasHTML = '';
+            
+            // Verificação 1: Óleo e Documentos
+            db.veiculos.forEach(v => {
+                const kmAt = Number(v.km_atual) || 0;
+                const kmOl = Number(v.km_oleo) || 0;
+                
+                // Alerta de Óleo Vencido
+                if(kmOl > 0 && kmAt >= kmOl) {
+                    alertasHTML += `<div class="bg-orange-50 text-orange-700 p-3 border border-orange-200 text-[10px] font-bold shadow-sm"><div class="uppercase tracking-widest text-orange-500 mb-1">Manutenção Motor</div><div class="text-xs">A moto placa <span class="font-mono text-black">${v.placa}</span> passou do limite da troca de óleo (${kmOl}km).</div></div>`;
+                }
+                
+                // Alerta de CRLV Vencido
+                if(v.doc) {
+                    const docDate = new Date(v.doc);
+                    docDate.setMinutes(docDate.getMinutes() + docDate.getTimezoneOffset());
+                    docDate.setHours(0,0,0,0);
+                    const hoje = new Date();
+                    hoje.setHours(0,0,0,0);
+                    if(docDate <= hoje) {
+                         alertasHTML += `<div class="bg-red-50 text-red-700 p-3 border border-red-200 text-[10px] font-bold shadow-sm"><div class="uppercase tracking-widest text-red-500 mb-1">Irregularidade Legal</div><div class="text-xs">Documento (CRLV) da moto <span class="font-mono text-black">${v.placa}</span> está VENCIDO. Risco de Pátio Detran.</div></div>`;
+                    }
+                }
+            });
+
+            // Verificação 2: Contratos Atrasados
+            db.contratos.filter(c => c.status === 'ativo').forEach(c => {
+                 const dataFim = new Date(c.data_fim);
+                 if(dataFim < new Date()) {
+                     const cli = db.clientes.find(x => x.id === c.cliente_id) || {nome: 'Desconhecido'};
+                     alertasHTML += `<div class="bg-red-50 text-red-700 p-3 border border-red-200 text-[10px] font-bold shadow-sm"><div class="uppercase tracking-widest text-red-500 mb-1">Atraso na Devolução</div><div class="text-xs">O cliente <span class="text-black">${cli.nome}</span> não devolveu a mota no prazo (Contrato VM-${c.id.toString().slice(-5)}).</div></div>`;
+                 }
+            });
+
+            if(alertasHTML === '') {
+                radar.innerHTML = '<div class="text-gray-400 text-[10px] font-bold uppercase tracking-widest p-6 text-center border border-gray-200 border-dashed bg-gray-50 flex flex-col items-center gap-2"><i class="ph-fill ph-shield-check text-3xl text-emerald-300"></i> Nenhum alerta crítico. Operação 100% estabilizada.</div>';
+            } else {
+                radar.innerHTML = alertasHTML;
+            }
+
+        }, 150); // Delay de segurança para o DOM renderizar o Canvas
 
     } else if (viewId === 'clientes') {
         appContent.appendChild(wrapper);
