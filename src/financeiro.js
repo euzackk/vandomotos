@@ -23,14 +23,12 @@ export function renderFinanceiro(container) {
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 overflow-hidden">
-                
                 <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden">
                     <div class="bg-gray-50 border-b border-gray-200 px-5 py-4 flex justify-between items-center">
                         <h3 class="font-bold text-gray-800 flex items-center gap-2 uppercase tracking-wider text-xs"><i class="ph-fill ph-bell-ringing text-brand-hover text-base"></i> Painel de Cobranças</h3>
                         <span class="text-[10px] bg-gray-900 text-white px-2 py-1 font-bold tracking-widest uppercase" id="qtd-cobrancas">0 ATIVAS</span>
                     </div>
-                    <div class="p-5 flex-1 overflow-y-auto space-y-4 bg-white custom-scroll" id="lista-receber">
-                        </div>
+                    <div class="p-5 flex-1 overflow-y-auto space-y-4 bg-white custom-scroll" id="lista-receber"></div>
                 </div>
 
                 <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden">
@@ -42,12 +40,10 @@ export function renderFinanceiro(container) {
                     </div>
                     <div class="flex-1 overflow-y-auto custom-scroll p-0">
                         <table class="w-full text-left whitespace-nowrap text-sm">
-                            <tbody id="tb-historico" class="divide-y divide-gray-100">
-                                </tbody>
+                            <tbody id="tb-historico" class="divide-y divide-gray-100"></tbody>
                         </table>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -91,7 +87,7 @@ export function renderFinanceiro(container) {
 
                     <div class="mt-6">
                         <button type="submit" class="w-full px-4 py-3 bg-brand-dark text-brand-main font-black hover:bg-black shadow-hard border border-gray-900 transition flex items-center justify-center gap-2 uppercase tracking-wider text-xs">
-                            <i class="ph-fill ph-check-circle text-lg"></i> Confirmar Recebimento e Renovar
+                            <i class="ph-fill ph-check-circle text-lg"></i> Receber e Renovar (+7 Dias)
                         </button>
                     </div>
                 </form>
@@ -154,19 +150,15 @@ export function renderFinanceiro(container) {
     const listaReceber = document.getElementById('lista-receber');
     const tbHistorico = document.getElementById('tb-historico');
     const qtdCobrancas = document.getElementById('qtd-cobrancas');
-    
     const dashSaldo = document.getElementById('dash-saldo');
     const dashEntradas = document.getElementById('dash-entradas');
     const dashSaidas = document.getElementById('dash-saidas');
-
     const modalBaixa = document.getElementById('modal-baixa');
     const modalBaixaPanel = document.getElementById('modal-baixa-panel');
     const formBaixa = document.getElementById('form-baixa');
-    
     const modalLan = document.getElementById('modal-lancamento');
     const modalLanPanel = document.getElementById('modal-lancamento-panel');
     const formLan = document.getElementById('form-lancamento');
-
     const bxValorExtra = document.getElementById('bx-valor-extra');
     const bxDisplayTotal = document.getElementById('bx-display-total');
 
@@ -227,10 +219,15 @@ export function renderFinanceiro(container) {
                         </div>
                         <div class="flex flex-col items-end gap-2">
                             <span class="font-black text-gray-900 font-mono">${utils.formatMoney(c.valor)}</span>
-                            <button class="btn-abrir-baixa text-[10px] font-black uppercase tracking-widest bg-gray-900 text-white px-3 py-1.5 hover:bg-black transition shadow-hard border border-gray-900" 
-                                data-id="${c.id}" data-valor="${c.valor}" data-nome="${cli.nome}">
-                                Efetuar Cobrança
-                            </button>
+                            <div class="flex gap-1">
+                                <button class="btn-wpp-cobranca text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 hover:bg-emerald-500 hover:text-white px-2 py-1.5 transition border border-emerald-200 shadow-sm flex items-center gap-1 rounded-sm" data-id="${c.id}" title="Cobrar via WhatsApp">
+                                    <i class="ph-bold ph-whatsapp text-sm"></i>
+                                </button>
+                                <button class="btn-abrir-baixa text-[10px] font-black uppercase tracking-widest bg-gray-900 text-white px-3 py-1.5 hover:bg-black transition shadow-hard border border-gray-900 rounded-sm" 
+                                    data-id="${c.id}" data-valor="${c.valor}" data-nome="${cli.nome}">
+                                    Liquidar Fatura
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -238,7 +235,6 @@ export function renderFinanceiro(container) {
         }
 
         const historico = [...db.financeiro].sort((a, b) => b.id - a.id); 
-        
         let totalEntradas = 0;
         let totalSaidas = 0;
 
@@ -306,10 +302,34 @@ export function renderFinanceiro(container) {
     bxValorExtra.addEventListener('input', calcularTotalBaixa);
 
     listaReceber.addEventListener('click', (e) => {
-        if (e.target.classList.contains('btn-abrir-baixa')) {
-            const idContrato = Number(e.target.getAttribute('data-id'));
-            const valorSugerido = Number(e.target.getAttribute('data-valor'));
-            const nomeCliente = e.target.getAttribute('data-nome');
+        const btnBaixa = e.target.closest('.btn-abrir-baixa');
+        const btnWpp = e.target.closest('.btn-wpp-cobranca');
+
+        // BOTÃO WHATSAPP DE COBRANÇA
+        if (btnWpp) {
+            const idContrato = Number(btnWpp.getAttribute('data-id'));
+            const c = db.contratos.find(x => x.id === idContrato);
+            const cli = db.clientes.find(x => x.id === c.cliente_id) || {nome: '', wpp: ''};
+            const vei = db.veiculos.find(x => x.id === c.veiculo_id) || {placa: ''};
+            
+            const valorFormatado = utils.formatMoney(c.valor);
+            let texto = `Olá *${cli.nome.trim()}*, tudo bem? 👋\n\n`;
+            texto += `Aqui é da *VANDO MOTOS LOCADORA*.\n`;
+            texto += `Consta no nosso sistema que a semanalidade da moto (Placa: *${vei.placa}*) no valor de *${valorFormatado}* encontra-se disponível para renovação.\n\n`;
+            texto += `Poderia nos enviar o comprovante Pix por aqui assim que efetuar o pagamento? Obrigado! 🏍️`;
+
+            const fone = cli.wpp.replace(/\D/g, '');
+            if (fone.length >= 10) {
+                window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(texto)}`, '_blank');
+            } else {
+                alert("O número de WhatsApp cadastrado para este cliente é inválido.");
+            }
+        }
+
+        if (btnBaixa) {
+            const idContrato = Number(btnBaixa.getAttribute('data-id'));
+            const valorSugerido = Number(btnBaixa.getAttribute('data-valor'));
+            const nomeCliente = btnBaixa.getAttribute('data-nome');
             
             document.getElementById('bx-id-contrato').value = idContrato;
             document.getElementById('bx-nome-cliente').innerText = nomeCliente;
@@ -350,6 +370,7 @@ export function renderFinanceiro(container) {
             desc += ` [+ R$ ${valorExtra} : ${motivoExtra || 'Taxas adicionais'}]`;
         }
 
+        // 1. LANÇA O DINHEIRO NO CAIXA
         const hojeISO = new Date().toISOString().split('T')[0];
         db.financeiro.push({
             id: Date.now(),
@@ -361,12 +382,19 @@ export function renderFinanceiro(container) {
             contrato_id: c.id
         });
 
+        // 2. RENOVAÇÃO AUTOMÁTICA FINANCEIRA (Para não aparecer mais no painel esta semana)
         const dataAntigaStr = c.vencimento ? c.vencimento : c.data_fim; 
         const dataAntiga = new Date(dataAntigaStr);
         dataAntiga.setMinutes(dataAntiga.getMinutes() + dataAntiga.getTimezoneOffset());
         dataAntiga.setDate(dataAntiga.getDate() + 7);
-        
         c.vencimento = dataAntiga.toISOString().split('T')[0];
+
+        // 3. RENOVAÇÃO AUTOMÁTICA LEGAL (Estica o prazo da devolução da mota por 7 dias no Contrato)
+        if(c.data_fim) {
+            const dataFimAtual = new Date(c.data_fim);
+            dataFimAtual.setDate(dataFimAtual.getDate() + 7);
+            c.data_fim = new Date(dataFimAtual.getTime() - (dataFimAtual.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+        }
 
         saveDB();
         atualizarTela();
