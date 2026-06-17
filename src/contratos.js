@@ -3,7 +3,6 @@ import { db, saveDB, utils } from './db.js';
 export function renderContratos(container) {
     container.innerHTML = `
         <div class="flex flex-col h-full fade-enter">
-            <!-- Barra Superior de Ações -->
             <div class="flex justify-between items-center mb-6">
                 <div class="relative w-full max-w-md">
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -14,7 +13,6 @@ export function renderContratos(container) {
                 </button>
             </div>
 
-            <!-- Tabela de Contratos Vigentes e Encerrados -->
             <div class="bg-white border border-gray-200 shadow-soft flex-1 overflow-hidden flex flex-col">
                 <div class="overflow-x-auto flex-1 custom-scroll">
                     <table class="w-full text-left border-collapse whitespace-nowrap text-sm">
@@ -25,14 +23,13 @@ export function renderContratos(container) {
                                 <th class="px-6 py-4 font-bold">Veículo / Placa</th>
                                 <th class="px-6 py-4 font-bold">Período de Vigência</th>
                                 <th class="px-6 py-4 font-bold">Status Operacional</th>
-                                <th class="px-6 py-4 font-bold text-right">Ações Legais</th>
+                                <th class="px-6 py-4 font-bold text-right">Painel de Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tb-contratos" class="divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
                 
-                <!-- Estado Vazio -->
                 <div id="contratos-empty" class="hidden flex-col items-center justify-center py-16 text-center">
                     <i class="ph ph-folder-open text-5xl text-gray-300 mb-3"></i>
                     <p class="text-sm text-gray-500 font-bold uppercase tracking-wider">Nenhum contrato registado na base de dados</p>
@@ -40,11 +37,8 @@ export function renderContratos(container) {
             </div>
         </div>
 
-        <!-- MODAL MASTER: FIRMAR CONTRATO -->
         <div id="modal-contrato" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity opacity-0">
             <div class="bg-white border border-gray-900 w-full max-w-4xl shadow-2xl overflow-hidden transform scale-95 transition-transform flex flex-col" id="modal-contrato-panel">
-                
-                <!-- Cabeçalho do Modal -->
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                     <div>
                         <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">Emissão de Contrato de Locação</h2>
@@ -53,26 +47,18 @@ export function renderContratos(container) {
                     <button id="btn-fechar-modal-c" class="text-gray-400 hover:text-red-600 transition p-1"><i class="ph ph-x text-2xl"></i></button>
                 </div>
 
-                <!-- Formulário de Criação -->
                 <form id="form-contrato" class="p-6 space-y-6 bg-white overflow-y-auto max-h-[70vh] custom-scroll">
-                    
-                    <!-- Bloco 1: Partes Envolvidas -->
                     <div class="bg-brand-light border border-brand-main p-4 flex flex-col md:flex-row gap-4 mb-2">
                         <div class="flex-1">
                             <label class="block text-xs font-extrabold text-brand-hover uppercase tracking-wider mb-1"><i class="ph-fill ph-user"></i> Selecione o Cliente *</label>
-                            <select id="loc-cliente" required class="w-full px-3 py-2 border border-brand-main/50 text-sm bg-white focus:border-brand-main outline-none font-bold text-gray-800 shadow-sm">
-                                <!-- Preenchido via JS -->
-                            </select>
+                            <select id="loc-cliente" required class="w-full px-3 py-2 border border-brand-main/50 text-sm bg-white focus:border-brand-main outline-none font-bold text-gray-800 shadow-sm"></select>
                         </div>
                         <div class="flex-1">
                             <label class="block text-xs font-extrabold text-brand-hover uppercase tracking-wider mb-1"><i class="ph-fill ph-motorcycle"></i> Patrimônio Disponível no Pátio *</label>
-                            <select id="loc-veiculo" required class="w-full px-3 py-2 border border-brand-main/50 text-sm bg-white focus:border-brand-main outline-none font-bold text-gray-800 shadow-sm">
-                                <!-- Preenchido via JS (Apenas status: disponivel) -->
-                            </select>
+                            <select id="loc-veiculo" required class="w-full px-3 py-2 border border-brand-main/50 text-sm bg-white focus:border-brand-main outline-none font-bold text-gray-800 shadow-sm"></select>
                         </div>
                     </div>
 
-                    <!-- Bloco 2: Prazos -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-gray-200 pt-5">
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Data e Hora da Saída *</label>
@@ -84,7 +70,6 @@ export function renderContratos(container) {
                         </div>
                     </div>
 
-                    <!-- Bloco 3: Valores Financeiros -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-gray-200 pt-5">
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Valor Total da Locação (R$) *</label>
@@ -97,7 +82,6 @@ export function renderContratos(container) {
                         </div>
                     </div>
 
-                    <!-- Rodapé de Ações do Form -->
                     <div class="pt-6 mt-2 border-t border-gray-100 flex gap-3">
                         <button type="button" id="btn-cancelar-c" class="flex-1 px-4 py-3 bg-white border border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition uppercase tracking-wider text-xs">Cancelar Operação</button>
                         <button type="submit" class="flex-1 px-4 py-3 bg-brand-dark text-brand-main font-black hover:bg-black shadow-hard border border-gray-900 transition flex items-center justify-center gap-2 uppercase tracking-wider text-xs">
@@ -195,14 +179,26 @@ export function renderContratos(container) {
                         <div class="${isAtrasado ? 'text-red-600 font-bold' : 'text-gray-500'}">Retorno: <span class="font-bold">${dtFim}</span></div>
                     </td>
                     <td class="px-6 py-4">${badgeStatus}</td>
-                    <td class="px-6 py-4 text-right flex flex-col gap-2 items-end justify-center h-full">
-                        <button class="btn-pdf text-brand-dark bg-brand-main hover:bg-brand-hover px-3 py-1.5 text-xs font-bold shadow-sm transition border border-brand-dark flex items-center gap-1 w-32 justify-center" data-id="${c.id}">
-                            <i class="ph-fill ph-printer"></i> Imprimir PDF
-                        </button>
-                        ${c.status === 'ativo' ? `
-                        <button class="btn-encerrar text-gray-600 bg-white hover:text-red-600 hover:border-red-600 border border-gray-300 px-3 py-1.5 text-xs font-bold transition w-32 justify-center" data-id="${c.id}">
-                            Registrar Retorno
-                        </button>` : ``}
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex flex-col gap-1.5 items-end justify-center h-full w-full">
+                            <div class="flex gap-1 w-full justify-end">
+                                <button class="btn-wpp bg-emerald-50 hover:bg-emerald-500 text-emerald-700 hover:text-white border border-emerald-200 hover:border-emerald-600 px-2 py-1 text-[10px] uppercase tracking-wider font-black transition rounded-sm flex items-center gap-1 shadow-sm" data-id="${c.id}" title="Avisar no WhatsApp">
+                                    <i class="ph-bold ph-whatsapp text-sm"></i> WhatsApp
+                                </button>
+                                <button class="btn-pdf bg-brand-main hover:bg-brand-hover text-brand-dark px-2 py-1 text-[10px] uppercase tracking-wider font-black transition border border-brand-dark rounded-sm flex items-center gap-1 shadow-sm" data-id="${c.id}" title="Imprimir PDF">
+                                    <i class="ph-bold ph-printer text-sm"></i> PDF
+                                </button>
+                            </div>
+                            ${c.status === 'ativo' ? `
+                            <div class="flex gap-1 w-full justify-end">
+                                <button class="btn-renovar bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-700 px-2 py-1 text-[10px] font-black uppercase tracking-wider transition rounded-sm flex items-center gap-1 shadow-sm" data-id="${c.id}" title="Renovação Automática do Prazo">
+                                    <i class="ph-bold ph-arrows-clockwise text-sm"></i> Renovar
+                                </button>
+                                <button class="btn-encerrar bg-red-50 text-red-700 border border-red-200 hover:bg-red-600 hover:text-white hover:border-red-700 px-2 py-1 text-[10px] font-black uppercase tracking-wider transition rounded-sm flex items-center gap-1 shadow-sm" data-id="${c.id}" title="Encerrar Contrato e Liberar Moto">
+                                    <i class="ph-bold ph-stop text-sm"></i> Baixa
+                                </button>
+                            </div>` : ``}
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -219,19 +215,14 @@ export function renderContratos(container) {
 
         const dataInicioStr = new Date(c.data_inicio).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
         const dataFimStr = new Date(c.data_fim).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-        
         const dataAtualObj = new Date();
         const dataAtualExtenso = dataAtualObj.toLocaleDateString('pt-BR', { dateStyle: 'long' });
         const horaAtual = dataAtualObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         
-        const enderecoCompleto = cli.logradouro 
-            ? `${cli.logradouro}, ${cli.numero} ${cli.complemento || ''} - ${cli.bairro}, ${cli.cidade}/${cli.uf}` 
-            : (cli.endereco || '________________________________________________');
-
+        const enderecoCompleto = cli.logradouro ? `${cli.logradouro}, ${cli.numero} ${cli.complemento || ''} - ${cli.bairro}, ${cli.cidade}/${cli.uf}` : (cli.endereco || '________________________________________________');
         const combustivelSaida = c.tracos_saida ?? (vei.combustivel || 0);
 
         const janelaPDF = window.open('', '_blank');
-        
         const html = `
             <!DOCTYPE html>
             <html lang="pt-BR">
@@ -245,13 +236,11 @@ export function renderContratos(container) {
                     h2 { font-size: 11pt; font-weight: bold; margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; background: #f0f0f0; padding: 3px; }
                     p { text-align: justify; margin-bottom: 6px; }
                     .bold { font-weight: bold; }
-                    
                     .signatures-container { margin-top: 30px; width: 100%; }
                     .sign-row { width: 100%; margin-bottom: 25px; clear: both; overflow: hidden; }
                     .sign-box { float: left; width: 45%; text-align: center; font-size: 9pt; }
                     .sign-box-right { float: right; width: 45%; text-align: center; font-size: 9pt; }
                     .sign-line { border-top: 1px solid #000; padding-top: 5px; margin-top: 30px; }
-                    
                     .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
                     ul { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; }
                     li { margin-bottom: 3px; }
@@ -262,79 +251,40 @@ export function renderContratos(container) {
                     <h2 style="margin:0; font-size: 14pt; background: transparent;">VANDO MOTOS LOCADORA LTDA</h2>
                     <p style="text-align: center; font-size: 9pt; margin:0;">CNPJ: 28.623.431/0001-23 | Rua Algodoeiro, 4581 - Caladinho, Porto Velho/RO</p>
                 </div>
-
                 <h1>CONTRATO DE LOCAÇÃO DE VEÍCULO</h1>
-
-                <p><span class="bold">LOCADOR:</span> VANDO MOTOS LOCADORA LTDA, inscrita no CNPJ sob o nº 28.623.431/0001-23, Nome Fantasia: VANDO MOTOS, com sede na Rua Algodoeiro, nº 4581, Bairro Caladinho, CEP 76.808-252, Porto Velho - RO. Telefone: (69) 3227-1985 / (69) 9222-2722. E-mail: vando_pvh@hotmail.com.</p>
-
-                <p><span class="bold">LOCATÁRIO(A):</span> <span class="bold" style="text-transform:uppercase;">${cli.nome || '___________________________'}</span>, de nacionalidade brasileira, estado civil _________________, profissão _________________, portador(a) do CPF/CNPJ: ${cli.cpf_cnpj || '________________'}, RG/IE: ________________, CNH Categoria _____, residente e domiciliado(a) na ${enderecoCompleto}. Contato: ${cli.wpp || '________________'}.</p>
-
+                <p><span class="bold">LOCADOR:</span> VANDO MOTOS LOCADORA LTDA, inscrita no CNPJ sob o nº 28.623.431/0001-23, Nome Fantasia: VANDO MOTOS, com sede na Rua Algodoeiro, nº 4581, Bairro Caladinho, CEP 76.808-252, Porto Velho - RO. Telefone: (69) 3227-1985 / (69) 9222-2722.</p>
+                <p><span class="bold">LOCATÁRIO(A):</span> <span class="bold" style="text-transform:uppercase;">${cli.nome || '___________________________'}</span>, portador(a) do CPF/CNPJ: ${cli.cpf_cnpj || '________________'}, residente e domiciliado(a) na ${enderecoCompleto}. Contato: ${cli.wpp || '________________'}.</p>
                 <h2>CLÁUSULA 1ª - DO OBJETO DA LOCAÇÃO</h2>
-                <p>O LOCADOR entrega em locação o veículo de sua propriedade sob as seguintes características:</p>
                 <ul>
-                    <li><span class="bold">Categoria:</span> Motocicleta / Veículo Automotor</li>
                     <li><span class="bold">Modelo/Cor:</span> ${vei.modelo || '___________________'}</li>
                     <li><span class="bold">Placa:</span> ${vei.placa || '_________'}</li>
-                    <li><span class="bold">Chassi:</span> ${vei.chassi || '___________________'}</li>
                     <li><span class="bold">RENAVAM:</span> ${vei.renavam || '___________________'}</li>
-                    <li><span class="bold">Vistoria Inicial:</span> Veículo entregue com <span class="bold">${combustivelSaida} traço(s) de combustível</span>, devidamente higienizado e conforme registro fotográfico em anexo no sistema da locadora.</li>
+                    <li><span class="bold">Vistoria Inicial:</span> Veículo entregue com <span class="bold">${combustivelSaida} traço(s) de combustível</span>, higienizado e inspecionado no sistema.</li>
                 </ul>
-
                 <h2>CLÁUSULA 2ª - DA FINALIDADE E USO</h2>
-                <p>O veículo destina-se a uso exclusivo do LOCATÁRIO, restrito à área urbana e rural limítrofe do município de Porto Velho - RO. É expressamente proibido ceder, sublocar, emprestar ou transferir o veículo a terceiros sob qualquer pretexto.</p>
-
+                <p>O veículo destina-se a uso exclusivo do LOCATÁRIO, restrito à área urbana e rural limítrofe do município de Porto Velho - RO. É expressamente proibido ceder ou sublocar a terceiros.</p>
                 <h2>CLÁUSULA 3ª - DO PRAZO E DEVOLUÇÃO</h2>
                 <p>O presente contrato tem vigência a partir de <span class="bold">${dataInicioStr}</span> com encerramento fixado para <span class="bold">${dataFimStr}</span>.</p>
-                <p><span class="bold">Parágrafo Único:</span> A não devolução no prazo configura quebra de contrato e apropriação indébita, autorizando o LOCADOR a tomar as medidas policiais e judiciais cabíveis de busca e apreensão.</p>
-
                 <h2>CLÁUSULA 4ª - DOS VALORES, GARANTIAS E PENALIDADES</h2>
-                <p>O LOCATÁRIO pagará a importância de <span class="bold">${utils.formatMoney(c.valor)}</span> pela locação. Em caso de devolução antecipada por desistência do LOCATÁRIO, não haverá devolução de valores. O LOCATÁRIO concorda com as seguintes condições de garantia e multas operacionais:</p>
+                <p>O LOCATÁRIO pagará a importância de <span class="bold">${utils.formatMoney(c.valor)}</span> pela locação. Concorda ainda com:</p>
                 <ol>
-                    <li><span class="bold">Atraso na Devolução:</span> Fica estipulada tolerância zero. Ao passar um (1) minuto do horário fixado, incidirá multa imediata de R$ 50,00, acrescida de R$ 50,00 por cada hora excedente.</li>
-                    <li><span class="bold">Combustível:</span> O veículo deve retornar com a exata mesma quantidade de traços de combustível da vistoria inicial. Será cobrada taxa de R$ 50,00 por cada traço faltante.</li>
-                    <li><span class="bold">Limpeza e Conservação:</span> O veículo é entregue limpo e assim deve retornar. A devolução do veículo sujo implicará em cobrança de R$ 50,00 (lavagem simples) ou R$ 150,00 (lavagem especial/barro pesado).</li>
-                    <li><span class="bold">Caução (Avarias Menores):</span> Fica retido o valor de <span class="bold">${utils.formatMoney(c.caucao)}</span> a título de caução, que será devolvido após a vistoria final, caso não haja multas, danos ou taxas pendentes.</li>
-                    <li><span class="bold">Garantia Total:</span> O LOCATÁRIO assina, neste ato, Nota Promissória no valor de mercado do veículo (<span class="bold">${utils.formatMoney(vei.fipe)}</span>), que será executada em caso de perda total, roubo, furto, apropriação indébita ou danos irreparáveis.</li>
+                    <li><span class="bold">Atraso:</span> Multa imediata de R$ 50,00, acrescida de R$ 50,00 por cada hora excedente ao horário fixado.</li>
+                    <li><span class="bold">Combustível e Limpeza:</span> Taxa de R$ 50,00 por traço faltante de gasolina. Devolução suja gera taxa de lavagem de R$ 50 a R$ 150.</li>
+                    <li><span class="bold">Caução:</span> Valor retido de <span class="bold">${utils.formatMoney(c.caucao)}</span>, devolvido na vistoria isenta de danos.</li>
+                    <li><span class="bold">Garantia Total:</span> Assinatura de Promissória no valor venal (${utils.formatMoney(vei.fipe)}), executável em caso de roubo/perda total.</li>
                 </ol>
-
-                <h2>CLÁUSULA 5ª - DA RESPONSABILIDADE CIVIL, CRIMINAL E TRÂNSITO</h2>
-                <p>O LOCATÁRIO assume total e irrestrita responsabilidade por quaisquer danos materiais, corporais ou morais causados a si mesmo, ao veículo ou a terceiros durante a vigência da locação.</p>
+                <h2>CLÁUSULA 5ª - DA RESPONSABILIDADE CIVIL E TRÂNSITO</h2>
                 <ol>
-                    <li><span class="bold">Infrações de Trânsito:</span> O LOCATÁRIO autoriza desde já e de forma irrevogável a indicação do seu nome e CNH como condutor infrator para toda e qualquer multa de trânsito ocorrida no período, assumindo os pontos e os pagamentos.</li>
-                    <li><span class="bold">Apreensão e Guincho:</span> Em caso de apreensão do veículo por órgãos de trânsito devido a conduta do LOCATÁRIO (ex: embriaguez, infrações), todas as despesas com guincho, diárias de pátio, taxas e honorários de despachante correrão por conta exclusiva do LOCATÁRIO.</li>
-                    <li><span class="bold">Manutenção:</span> O LOCATÁRIO é obrigado a zelar pelo veículo e a comparecer à locadora para as trocas de óleo preventivas solicitadas pelo sistema. A fundição do motor por falta de óleo decorrente de negligência será cobrada integralmente.</li>
+                    <li><span class="bold">Infrações:</span> Autoriza a indicação irrevogável do seu nome como condutor infrator para qualquer multa do período.</li>
+                    <li><span class="bold">Apreensão:</span> Despesas com guincho e diárias por infrações correrão por conta exclusiva do LOCATÁRIO.</li>
                 </ol>
-
                 <h2>CLÁUSULA 6ª - DO FORO</h2>
-                <p>Elegem as partes o Foro da Comarca de Porto Velho - RO para dirimir eventuais dúvidas ou litígios oriundos deste instrumento. E, por estarem de acordo, assinam o presente contrato.</p>
-
+                <p>Elegem o Foro de Porto Velho - RO para dirimir litígios. E, por estarem de acordo, assinam este contrato.</p>
                 <p style="text-align: right; margin-top: 20px; font-weight: bold;">Porto Velho - RO, ${dataAtualExtenso} às ${horaAtual}.</p>
-
                 <div class="signatures-container">
                     <div class="sign-row">
-                        <div class="sign-box">
-                            <div class="sign-line">
-                                <span class="bold">VANDO MOTOS LOCADORA LTDA</span><br>Vanderlei Ferreira da Cruz<br>(Locador)
-                            </div>
-                        </div>
-                        <div class="sign-box-right">
-                            <div class="sign-line">
-                                <span class="bold" style="text-transform:uppercase;">${cli.nome || 'LOCATÁRIO'}</span><br>CPF/CNPJ: ${cli.cpf_cnpj || '____________________'}<br>(Locatário)
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="sign-row">
-                        <div class="sign-box">
-                            <div class="sign-line">
-                                <span class="bold">Testemunha 1:</span><br>CPF: _________________________
-                            </div>
-                        </div>
-                        <div class="sign-box-right">
-                            <div class="sign-line">
-                                <span class="bold">Testemunha 2:</span><br>CPF: _________________________
-                            </div>
-                        </div>
+                        <div class="sign-box"><div class="sign-line"><span class="bold">VANDO MOTOS LOCADORA LTDA</span><br>(Locador)</div></div>
+                        <div class="sign-box-right"><div class="sign-line"><span class="bold" style="text-transform:uppercase;">${cli.nome || 'LOCATÁRIO'}</span><br>(Locatário)</div></div>
                     </div>
                 </div>
             </body>
@@ -344,29 +294,21 @@ export function renderContratos(container) {
         janelaPDF.document.write(html);
         janelaPDF.document.close();
         janelaPDF.focus();
-        
-        setTimeout(() => {
-            janelaPDF.print();
-        }, 800);
+        setTimeout(() => janelaPDF.print(), 800);
     }
 
     function toggleModal(abrir = true) {
         if (abrir) {
             carregarSelects();
-            
             const agora = new Date();
             agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
             inputInicio.value = agora.toISOString().slice(0, 16);
-
             modal.classList.remove('hidden');
             setTimeout(() => { modal.classList.remove('opacity-0'); modalPanel.classList.remove('scale-95'); }, 10);
         } else {
             modal.classList.add('opacity-0');
             modalPanel.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                form.reset();
-            }, 200);
+            setTimeout(() => { modal.classList.add('hidden'); form.reset(); }, 200);
         }
     }
 
@@ -389,10 +331,7 @@ export function renderContratos(container) {
         };
 
         db.contratos.push(novoContrato);
-
-        if (veiculoObj) {
-            veiculoObj.status = 'locado';
-        }
+        if (veiculoObj) veiculoObj.status = 'locado';
 
         saveDB();
         atualizarTabela();
@@ -406,6 +345,62 @@ export function renderContratos(container) {
     tbody.addEventListener('click', (e) => {
         const btnPDF = e.target.closest('.btn-pdf');
         const btnEncerrar = e.target.closest('.btn-encerrar');
+        const btnWpp = e.target.closest('.btn-wpp');
+        const btnRenovar = e.target.closest('.btn-renovar');
+
+        // BOTÃO 1: WHATSAPP MAGICO
+        if (btnWpp) {
+            const id = Number(btnWpp.getAttribute('data-id'));
+            const c = db.contratos.find(x => x.id === id);
+            const cli = db.clientes.find(x => x.id === c.cliente_id) || {nome: 'Cliente', wpp: ''};
+            const vei = db.veiculos.find(x => x.id === c.veiculo_id) || {modelo: 'Moto', placa: ''};
+            
+            const dataFimStr = new Date(c.data_fim).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+            
+            let texto = `Olá *${cli.nome.trim()}*, tudo bem? 👋\n\n`;
+            texto += `Aqui é da *VANDO MOTOS LOCADORA*.\n`;
+            texto += `Este é o aviso oficial do seu contrato de locação da moto *${vei.modelo}* (Placa: *${vei.placa}*).\n`;
+            texto += `A devolução/renovação do veículo está fixada para o dia: *${dataFimStr}*.\n\n`;
+            texto += `Qualquer dúvida, a nossa oficina está à disposição! 🏍️`;
+
+            const fone = cli.wpp.replace(/\D/g, '');
+            if (fone.length >= 10) {
+                window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(texto)}`, '_blank');
+            } else {
+                alert("O número de WhatsApp cadastrado para este cliente é inválido.");
+            }
+        }
+
+        // BOTÃO 2: RENOVAÇÃO AUTOMÁTICA DE PRAZO
+        if (btnRenovar) {
+            const id = Number(btnRenovar.getAttribute('data-id'));
+            const c = db.contratos.find(x => x.id === id);
+            
+            const diasTexto = prompt("RENOVAÇÃO AUTOMÁTICA\n\nQuantos dias deseja adicionar de extensão a este contrato?\n(Ex: 7 para uma semana, 30 para um mês)", "7");
+            
+            if (diasTexto !== null) {
+                const dias = parseInt(diasTexto);
+                if (!isNaN(dias) && dias > 0) {
+                    const dataAtual = new Date(c.data_fim);
+                    dataAtual.setDate(dataAtual.getDate() + dias);
+                    
+                    const novaDataLocal = new Date(dataAtual.getTime() - (dataAtual.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                    c.data_fim = novaDataLocal;
+                    
+                    if(c.vencimento) {
+                        const dataVenc = new Date(c.vencimento);
+                        dataVenc.setDate(dataVenc.getDate() + dias);
+                        c.vencimento = new Date(dataVenc.getTime() - (dataVenc.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                    }
+
+                    saveDB();
+                    atualizarTabela();
+                    alert(`✅ Contrato da Placa atualizado! Prolongado por mais ${dias} dias.`);
+                } else {
+                    alert("Atenção: Introduza um número válido de dias.");
+                }
+            }
+        }
 
         if (btnPDF) {
             const id = Number(btnPDF.getAttribute('data-id'));
@@ -414,15 +409,12 @@ export function renderContratos(container) {
         
         if (btnEncerrar) {
             const id = Number(btnEncerrar.getAttribute('data-id'));
-            
             if (confirm("Confirma a receção do veículo e o encerramento da locação? O veículo voltará a ficar 'Disponível' no pátio para novos contratos.")) {
                 const index = db.contratos.findIndex(c => c.id === id);
                 db.contratos[index].status = 'encerrado';
                 
                 const veiIndex = db.veiculos.findIndex(v => v.id === db.contratos[index].veiculo_id);
-                if (veiIndex > -1) {
-                    db.veiculos[veiIndex].status = 'disponivel';
-                }
+                if (veiIndex > -1) db.veiculos[veiIndex].status = 'disponivel';
 
                 saveDB();
                 atualizarTabela();
