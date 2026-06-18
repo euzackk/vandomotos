@@ -1,4 +1,7 @@
-const CACHE_NAME = 'vandomotos-pwa-v1';
+// 🔄 MUDAMOS PARA V2: Sempre que fizer uma grande alteração no sistema, 
+// mude este número (v3, v4, etc.) para forçar os telemóveis a atualizarem.
+const CACHE_NAME = 'vandomotos-pwa-v2'; 
+
 const ASSETS = [
     './',
     './index.html',
@@ -12,21 +15,41 @@ const ASSETS = [
     './src/financeiro.js'
 ];
 
-// Instalação do Service Worker (Guarda os ficheiros no Cache do celular)
+// 1. Instalação: Guarda a nova versão no telemóvel
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
-            console.log('Ficheiros em cache para modo offline/rápido');
+            console.log('📦 A guardar ficheiros na versão: ' + CACHE_NAME);
             return cache.addAll(ASSETS);
         })
     );
+    // Força a atualização a acontecer imediatamente, sem esperar que o cliente feche o App
+    self.skipWaiting(); 
 });
 
-// Interceta os pedidos para acelerar o carregamento
+// 2. Ativação: O Varredor (Apaga a versão antiga)
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cache => {
+                    if (cache !== CACHE_NAME) {
+                        console.log('🧹 A limpar versão antiga do Cache: ' + cache);
+                        return caches.delete(cache);
+                    }
+                })
+            );
+        })
+    );
+    // Diz ao telemóvel para começar a usar a versão nova agora mesmo
+    self.clients.claim();
+});
+
+// 3. Interceção: Serve os ficheiros muito rápido
 self.addEventListener('fetch', event => {
     event.respondWith(
-        caches.match(event.request).then(response => {
-            return response || fetch(event.request);
+        fetch(event.request).catch(() => {
+            return caches.match(event.request);
         })
     );
 });
