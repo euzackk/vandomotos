@@ -35,6 +35,9 @@ const menuContainer = document.getElementById('main-menu');
 const pageTitle = document.getElementById('page-title');
 const appContent = document.getElementById('app-content');
 
+// Variável de Sessão (Guarda o e-mail de quem entrou)
+let currentUserEmail = '';
+
 const menuItems = [
     { id: 'dashboard', icon: 'ph-squares-four', title: 'Visão Geral' },
     { id: 'clientes', icon: 'ph-users', title: 'Clientes' },
@@ -51,6 +54,7 @@ async function initApp() {
             setupLoginForm();
             return; 
         }
+        currentUserEmail = session.user.email; // Grava o e-mail logado
         iniciarSistema();
     } catch (e) {
         loginErro.classList.remove('hidden');
@@ -69,7 +73,8 @@ function setupLoginForm() {
         loginErro.classList.add('hidden');
 
         try {
-            await auth.login(email, senha);
+            const data = await auth.login(email, senha);
+            currentUserEmail = data.user.email; // Grava o e-mail após o login
             iniciarSistema();
         } catch (error) {
             loginErro.classList.remove('hidden');
@@ -84,7 +89,12 @@ async function iniciarSistema() {
     loginScreen.classList.add('opacity-0');
     setTimeout(() => loginScreen.classList.add('hidden'), 500);
 
-    document.getElementById('current-date').innerText = new Date().toLocaleDateString('pt-BR');
+    // Identificação visual de quem está logado
+    const isMechanic = currentUserEmail === 'oficina@vandomotos.com';
+    document.getElementById('current-date').innerHTML = isMechanic 
+        ? `<span class="text-orange-600 uppercase font-black tracking-widest text-[10px]">Acesso Oficina</span>` 
+        : `<span class="text-emerald-600 uppercase font-black tracking-widest text-[10px]">Acesso Total</span>`;
+    
     pageTitle.innerText = "Sincronizando Sistema...";
     
     btnLogout.addEventListener('click', () => {
@@ -99,7 +109,14 @@ async function iniciarSistema() {
 
 function buildMenu() {
     menuContainer.innerHTML = '';
-    menuItems.forEach(item => {
+    
+    // SISTEMA DE SEGURANÇA (RBAC): O Mecânico só vê Visão Geral e Frota
+    const isMechanic = currentUserEmail === 'oficina@vandomotos.com';
+    const allowedItems = isMechanic 
+        ? menuItems.filter(i => i.id === 'dashboard' || i.id === 'veiculos') 
+        : menuItems;
+
+    allowedItems.forEach(item => {
         const btn = document.createElement('button');
         btn.className = `w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold mb-1.5 nav-btn border-l-4 border-transparent text-gray-400 hover:bg-gray-900 hover:text-white transition-all`;
         btn.dataset.id = item.id;
@@ -120,7 +137,7 @@ function navigateTo(viewId) {
     });
 
     const currentView = menuItems.find(i => i.id === viewId);
-    pageTitle.innerText = currentView.title;
+    if(currentView) pageTitle.innerText = currentView.title;
     renderView(viewId);
 }
 
@@ -132,27 +149,26 @@ function renderView(viewId) {
     const wrapper = document.createElement('div');
     wrapper.className = 'fade-enter h-full flex flex-col';
 
+    const isMechanic = currentUserEmail === 'oficina@vandomotos.com';
+
     if (viewId === 'dashboard') {
-        
-        // 1. CÁLCULO DE ESTATÍSTICAS BASE
         const totalClientes = db.clientes.length;
         const totalVeiculos = db.veiculos.length;
         const locacoesAtivas = db.contratos.filter(c => c.status === 'ativo').length;
-        
         const receitaTotal = db.financeiro.filter(f => f.tipo === 'entrada').reduce((acc, curr) => acc + Number(curr.valor), 0);
         const despesaTotal = db.financeiro.filter(f => f.tipo === 'saida').reduce((acc, curr) => acc + Number(curr.valor), 0);
         
-        // 2. CÁLCULOS DA FROTA
         const veiculosOficina = db.veiculos.filter(v => v.status === 'manutencao').length;
         const veiculosLivres = totalVeiculos - locacoesAtivas - veiculosOficina;
 
-        // 3. ESTRUTURA HTML DO DASHBOARD
         wrapper.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                ${!isMechanic ? `
                 <div class="bg-white p-6 border border-gray-200 shadow-soft flex flex-col justify-between">
                     <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph ph-users text-lg"></i> Clientes Base</p>
                     <h3 class="text-4xl font-black text-brand-dark">${totalClientes}</h3>
                 </div>
+                ` : ``}
                 
                 <div class="bg-white p-6 border border-gray-200 shadow-soft flex flex-col justify-between">
                     <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph ph-motorcycle text-lg"></i> Frota Registada</p>
@@ -164,14 +180,21 @@ function renderView(viewId) {
                     <h3 class="text-4xl font-black text-blue-600">${locacoesAtivas}</h3>
                 </div>
                 
+                ${!isMechanic ? `
                 <div class="bg-brand-dark p-6 border border-brand-dark shadow-hard flex flex-col justify-between relative overflow-hidden group">
                     <div class="absolute top-0 right-0 w-32 h-32 bg-brand-main/5 transform rotate-45 translate-x-10 -translate-y-10"></div>
                     <p class="text-xs font-bold text-brand-main uppercase tracking-widest mb-3 relative z-10 flex items-center gap-2"><i class="ph ph-wallet text-lg"></i> Receita Bruta</p>
                     <h3 class="text-3xl font-black text-white relative z-10 mt-1">${utils.formatMoney(receitaTotal)}</h3>
                 </div>
+                ` : `
+                <div class="bg-orange-50 p-6 border border-orange-200 shadow-soft flex flex-col justify-between">
+                    <p class="text-xs font-bold text-orange-600 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph-fill ph-wrench text-lg"></i> Motas na Oficina</p>
+                    <h3 class="text-4xl font-black text-orange-600">${veiculosOficina}</h3>
+                </div>
+                `}
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+            <div class="grid grid-cols-1 ${!isMechanic ? 'lg:grid-cols-3' : 'lg:grid-cols-2'} gap-6 flex-1">
                 
                 <div class="bg-white border border-gray-200 p-5 shadow-soft flex flex-col">
                     <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">Status da Frota (Ocupação)</h4>
@@ -180,12 +203,14 @@ function renderView(viewId) {
                     </div>
                 </div>
 
+                ${!isMechanic ? `
                 <div class="bg-white border border-gray-200 p-5 shadow-soft flex flex-col">
                     <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">Balanço de Caixa Global</h4>
                     <div class="relative flex-1 min-h-[250px] w-full flex items-center justify-center">
                         <canvas id="chart-financas"></canvas>
                     </div>
                 </div>
+                ` : ``}
 
                 <div class="bg-white border border-gray-200 p-5 shadow-soft flex flex-col">
                     <h4 class="text-xs font-black text-red-600 uppercase tracking-widest mb-4 border-b border-red-100 pb-2 flex items-center gap-2">
@@ -199,9 +224,7 @@ function renderView(viewId) {
         `;
         appContent.appendChild(wrapper);
 
-        // 4. RENDERIZAÇÃO DOS GRÁFICOS (Apenas após o HTML estar na tela)
         setTimeout(() => {
-            // Renderiza Gráfico 1: Frota
             const ctxFrota = document.getElementById('chart-frota');
             if(ctxFrota) {
                 new Chart(ctxFrota, {
@@ -215,16 +238,10 @@ function renderView(viewId) {
                             hoverOffset: 4
                         }]
                     },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false, 
-                        cutout: '70%', 
-                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, family: 'Inter' } } } } 
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, family: 'Inter' } } } } }
                 });
             }
 
-            // Renderiza Gráfico 2: Finanças
             const ctxFin = document.getElementById('chart-financas');
             if(ctxFin) {
                 new Chart(ctxFin, {
@@ -236,30 +253,20 @@ function renderView(viewId) {
                             { label: 'Despesas / Saídas', data: [despesaTotal], backgroundColor: '#ef4444', borderRadius: 4 }
                         ]
                     },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false, 
-                        scales: { y: { beginAtZero: true, display: false } },
-                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, family: 'Inter' } } } } 
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, display: false } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, family: 'Inter' } } } } }
                 });
             }
 
-            // Renderiza Radar de Alertas
             const radar = document.getElementById('radar-alertas');
             let alertasHTML = '';
             
-            // Verificação 1: Óleo e Documentos
             db.veiculos.forEach(v => {
                 const kmAt = Number(v.km_atual) || 0;
                 const kmOl = Number(v.km_oleo) || 0;
-                
-                // Alerta de Óleo Vencido
                 if(kmOl > 0 && kmAt >= kmOl) {
                     alertasHTML += `<div class="bg-orange-50 text-orange-700 p-3 border border-orange-200 text-[10px] font-bold shadow-sm"><div class="uppercase tracking-widest text-orange-500 mb-1">Manutenção Motor</div><div class="text-xs">A moto placa <span class="font-mono text-black">${v.placa}</span> passou do limite da troca de óleo (${kmOl}km).</div></div>`;
                 }
                 
-                // Alerta de CRLV Vencido
                 if(v.doc) {
                     const docDate = new Date(v.doc);
                     docDate.setMinutes(docDate.getMinutes() + docDate.getTimezoneOffset());
@@ -272,7 +279,6 @@ function renderView(viewId) {
                 }
             });
 
-            // Verificação 2: Contratos Atrasados
             db.contratos.filter(c => c.status === 'ativo').forEach(c => {
                  const dataFim = new Date(c.data_fim);
                  if(dataFim < new Date()) {
@@ -286,19 +292,18 @@ function renderView(viewId) {
             } else {
                 radar.innerHTML = alertasHTML;
             }
+        }, 150);
 
-        }, 150); // Delay de segurança para o DOM renderizar o Canvas
-
-    } else if (viewId === 'clientes') {
+    } else if (viewId === 'clientes' && !isMechanic) {
         appContent.appendChild(wrapper);
         renderClientes(wrapper); 
     } else if (viewId === 'veiculos') {
         appContent.appendChild(wrapper);
         renderVeiculos(wrapper); 
-    } else if (viewId === 'contratos') {
+    } else if (viewId === 'contratos' && !isMechanic) {
         appContent.appendChild(wrapper);
         renderContratos(wrapper); 
-    } else if (viewId === 'financeiro') {
+    } else if (viewId === 'financeiro' && !isMechanic) {
         appContent.appendChild(wrapper);
         renderFinanceiro(wrapper); 
     }
