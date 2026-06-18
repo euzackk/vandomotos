@@ -34,9 +34,14 @@ export function renderFinanceiro(container) {
                 <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden">
                     <div class="bg-gray-50 border-b border-gray-200 px-5 py-4 flex justify-between items-center">
                         <h3 class="font-bold text-gray-800 flex items-center gap-2 uppercase tracking-wider text-xs"><i class="ph-fill ph-list-numbers text-gray-400 text-base"></i> Livro Caixa (Extrato)</h3>
-                        <button id="btn-novo-lancamento" class="text-[10px] bg-gray-200 hover:bg-brand-main hover:text-brand-dark text-gray-700 px-3 py-1.5 font-bold transition-colors uppercase tracking-widest flex items-center gap-1 border border-gray-300">
-                            <i class="ph ph-plus"></i> Novo Registo Manual
-                        </button>
+                        <div class="flex gap-2">
+                            <button id="btn-exportar-excel" class="text-[10px] bg-emerald-50 hover:bg-emerald-500 text-emerald-700 hover:text-white px-3 py-1.5 font-bold transition-colors uppercase tracking-widest flex items-center gap-1 border border-emerald-200 shadow-sm rounded-sm" title="Baixar histórico para o Excel">
+                                <i class="ph-bold ph-microsoft-excel text-sm"></i> Exportar
+                            </button>
+                            <button id="btn-novo-lancamento" class="text-[10px] bg-gray-200 hover:bg-brand-main hover:text-brand-dark text-gray-700 px-3 py-1.5 font-bold transition-colors uppercase tracking-widest flex items-center gap-1 border border-gray-300 rounded-sm">
+                                <i class="ph ph-plus"></i> Manual
+                            </button>
+                        </div>
                     </div>
                     <div class="flex-1 overflow-y-auto custom-scroll p-0">
                         <table class="w-full text-left whitespace-nowrap text-sm">
@@ -56,12 +61,10 @@ export function renderFinanceiro(container) {
                 <form id="form-baixa" class="p-6">
                     <input type="hidden" id="bx-id-contrato">
                     <input type="hidden" id="bx-valor-base">
-                    
                     <div class="mb-4">
                         <p class="text-xs text-gray-500 uppercase tracking-widest font-bold">Cliente</p>
                         <p class="text-lg font-black text-gray-900" id="bx-nome-cliente">---</p>
                     </div>
-
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Semanalidade Base (R$)</label>
@@ -79,12 +82,10 @@ export function renderFinanceiro(container) {
                             <input type="text" id="bx-motivo-extra" placeholder="Ex: Multa de atraso (1h) + Lavagem Simples" class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none">
                         </div>
                     </div>
-
                     <div class="mt-6 p-4 bg-emerald-50 border border-emerald-200 flex justify-between items-center">
                         <span class="text-xs font-black text-emerald-800 uppercase tracking-widest">Total a Receber</span>
                         <span class="text-2xl font-black text-emerald-600 font-mono" id="bx-display-total">R$ 0,00</span>
                     </div>
-
                     <div class="mt-6">
                         <button type="submit" class="w-full px-4 py-3 bg-brand-dark text-brand-main font-black hover:bg-black shadow-hard border border-gray-900 transition flex items-center justify-center gap-2 uppercase tracking-wider text-xs">
                             <i class="ph-fill ph-check-circle text-lg"></i> Receber e Renovar (+7 Dias)
@@ -101,7 +102,6 @@ export function renderFinanceiro(container) {
                     <button id="btn-fechar-lancamento" class="text-gray-400 hover:text-red-600 transition"><i class="ph ph-x text-xl"></i></button>
                 </div>
                 <form id="form-lancamento" class="p-6 space-y-4">
-                    
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Tipo de Movimento *</label>
                         <select id="lan-tipo" class="w-full px-3 py-2 border border-gray-300 text-sm bg-white focus:border-brand-main outline-none font-bold">
@@ -109,7 +109,6 @@ export function renderFinanceiro(container) {
                             <option value="entrada">Entrada (Receita Avulsa / Venda)</option>
                         </select>
                     </div>
-
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Categoria *</label>
                         <select id="lan-categoria" class="w-full px-3 py-2 border border-gray-300 text-sm bg-white focus:border-brand-main outline-none">
@@ -120,12 +119,10 @@ export function renderFinanceiro(container) {
                             <option value="Outros">Outros</option>
                         </select>
                     </div>
-
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Descrição do Movimento *</label>
                         <input type="text" id="lan-descricao" required placeholder="Ex: Troca de óleo da Titan Placa ABC" class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none">
                     </div>
-
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Data *</label>
@@ -136,7 +133,6 @@ export function renderFinanceiro(container) {
                             <input type="number" step="0.01" id="lan-valor" required placeholder="Ex: 150.00" class="w-full px-3 py-2 border border-gray-300 text-sm focus:border-brand-main outline-none font-mono font-bold">
                         </div>
                     </div>
-
                     <div class="pt-4 mt-2 border-t border-gray-100 flex gap-3">
                         <button type="submit" class="flex-1 px-4 py-3 bg-brand-dark text-brand-main font-black hover:bg-black shadow-hard border border-gray-900 transition flex items-center justify-center gap-2 uppercase tracking-wider text-xs">
                             <i class="ph-fill ph-floppy-disk text-lg"></i> Gravar Registo
@@ -305,7 +301,6 @@ export function renderFinanceiro(container) {
         const btnBaixa = e.target.closest('.btn-abrir-baixa');
         const btnWpp = e.target.closest('.btn-wpp-cobranca');
 
-        // BOTÃO WHATSAPP DE COBRANÇA
         if (btnWpp) {
             const idContrato = Number(btnWpp.getAttribute('data-id'));
             const c = db.contratos.find(x => x.id === idContrato);
@@ -370,11 +365,9 @@ export function renderFinanceiro(container) {
             desc += ` [+ R$ ${valorExtra} : ${motivoExtra || 'Taxas adicionais'}]`;
         }
 
-        // 1. LANÇA O DINHEIRO NO CAIXA
-        const hojeISO = new Date().toISOString().split('T')[0];
         db.financeiro.push({
             id: Date.now(),
-            data: hojeISO,
+            data: new Date().toISOString().split('T')[0],
             tipo: 'entrada',
             categoria: 'Locação Semanal',
             descricao: desc,
@@ -382,14 +375,12 @@ export function renderFinanceiro(container) {
             contrato_id: c.id
         });
 
-        // 2. RENOVAÇÃO AUTOMÁTICA FINANCEIRA (Para não aparecer mais no painel esta semana)
         const dataAntigaStr = c.vencimento ? c.vencimento : c.data_fim; 
         const dataAntiga = new Date(dataAntigaStr);
         dataAntiga.setMinutes(dataAntiga.getMinutes() + dataAntiga.getTimezoneOffset());
         dataAntiga.setDate(dataAntiga.getDate() + 7);
         c.vencimento = dataAntiga.toISOString().split('T')[0];
 
-        // 3. RENOVAÇÃO AUTOMÁTICA LEGAL (Estica o prazo da devolução da mota por 7 dias no Contrato)
         if(c.data_fim) {
             const dataFimAtual = new Date(c.data_fim);
             dataFimAtual.setDate(dataFimAtual.getDate() + 7);
@@ -418,7 +409,6 @@ export function renderFinanceiro(container) {
 
     formLan.addEventListener('submit', (e) => {
         e.preventDefault();
-        
         db.financeiro.push({
             id: Date.now(),
             data: document.getElementById('lan-data').value,
@@ -427,7 +417,6 @@ export function renderFinanceiro(container) {
             descricao: document.getElementById('lan-descricao').value,
             valor: Number(document.getElementById('lan-valor').value)
         });
-
         saveDB();
         atualizarTela();
         document.getElementById('btn-fechar-lancamento').click();
@@ -443,6 +432,46 @@ export function renderFinanceiro(container) {
                 atualizarTela();
             }
         }
+    });
+
+    // ==========================================
+    // EXPORTAÇÃO CONTÁBIL PARA EXCEL (CSV)
+    // ==========================================
+    document.getElementById('btn-exportar-excel').addEventListener('click', () => {
+        if (db.financeiro.length === 0) {
+            alert("Não existem movimentos no livro caixa para exportar.");
+            return;
+        }
+
+        // Cabeçalho das Colunas do Excel
+        const cabecalhos = ["Nº Documento", "Data do Registo", "Tipo de Movimento", "Categoria", "Descrição", "Valor(R$)"];
+        const linhasCSV = [cabecalhos.join(",")];
+
+        // Varre a base de dados
+        db.financeiro.forEach(f => {
+            const linha = [
+                f.id,
+                utils.formatDate(f.data),
+                f.tipo === 'entrada' ? 'RECEITA' : 'DESPESA',
+                `"${f.categoria || 'N/A'}"`, // Aspas para não bugar o Excel se houver vírgulas na frase
+                `"${f.descricao || 'N/A'}"`,
+                f.tipo === 'entrada' ? f.valor : `-${f.valor}` // Valor negativo se for despesa
+            ];
+            linhasCSV.push(linha.join(","));
+        });
+
+        // Junta tudo num arquivo e faz o download
+        const blob = new Blob([linhasCSV.join("\\n")], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        
+        const dataHoje = new Date().toISOString().split('T')[0];
+        link.href = url;
+        link.download = `Balanco_Caixa_VandoMotos_${dataHoje}.csv`;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     });
 
     atualizarTela();
