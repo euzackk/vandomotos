@@ -1,5 +1,5 @@
 // MUDAMOS PARA V3 para forçar o telemóvel a puxar o logotipo grande
-const CACHE_NAME = 'vandomotos-pwa-v3'; 
+const CACHE_NAME = 'vandomotos-pwa-v4'; 
 
 const ASSETS = [
     './',
