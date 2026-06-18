@@ -3,7 +3,6 @@ import { db, saveDB, utils } from './db.js';
 export function renderContratos(container) {
     container.innerHTML = `
         <div class="flex flex-col h-full fade-enter">
-            <!-- Barra Superior de Ações Responsiva -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div class="relative w-full md:max-w-md">
                     <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -14,7 +13,6 @@ export function renderContratos(container) {
                 </button>
             </div>
 
-            <!-- Tabela de Contratos Vigentes e Encerrados -->
             <div class="bg-white border border-gray-200 shadow-soft flex-1 overflow-hidden flex flex-col">
                 <div class="overflow-x-auto flex-1 custom-scroll">
                     <table class="w-full text-left border-collapse whitespace-nowrap text-sm">
@@ -32,7 +30,6 @@ export function renderContratos(container) {
                     </table>
                 </div>
                 
-                <!-- Estado Vazio -->
                 <div id="contratos-empty" class="hidden flex-col items-center justify-center py-16 text-center">
                     <i class="ph ph-folder-open text-5xl text-gray-300 mb-3"></i>
                     <p class="text-sm text-gray-500 font-bold uppercase tracking-wider">Nenhum contrato registado na base de dados</p>
@@ -40,7 +37,6 @@ export function renderContratos(container) {
             </div>
         </div>
 
-        <!-- MODAL MASTER: FIRMAR CONTRATO -->
         <div id="modal-contrato" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity opacity-0">
             <div class="bg-white border border-gray-900 w-full max-w-4xl shadow-2xl overflow-hidden transform scale-95 transition-transform flex flex-col" id="modal-contrato-panel">
                 
@@ -231,11 +227,8 @@ export function renderContratos(container) {
         const enderecoCompleto = cli.logradouro ? `${cli.logradouro}, ${cli.numero} ${cli.complemento || ''} - ${cli.bairro}, ${cli.cidade}/${cli.uf}` : (cli.endereco || '________________________________________________');
         const combustivelSaida = c.tracos_saida ?? (vei.combustivel || 0);
 
-        // Prepara o caminho correto para a logo na marca d'água
-        let baseUrl = window.location.href;
-        if (baseUrl.endsWith('index.html')) baseUrl = baseUrl.replace('index.html', '');
-        if (!baseUrl.endsWith('/')) baseUrl += '/';
-        const logoUrl = baseUrl + 'assets/img/logo.png';
+        // Caminho da imagem à prova de falhas
+        const logoUrl = new URL('./assets/img/logo.png', document.baseURI).href;
 
         const janelaPDF = window.open('', '_blank');
         const html = `
@@ -245,11 +238,18 @@ export function renderContratos(container) {
                 <meta charset="UTF-8">
                 <title>Contrato Oficial - ${cli.nome}</title>
                 <style>
-                    /* Ocultar Cabeçalhos e Rodapés do Navegador (URLs e Data) */
+                    /* Ocultar Cabeçalhos e Rodapés do Navegador */
                     @page { size: A4; margin: 0; }
-                    body { font-family: 'Arial', sans-serif; color: #000; line-height: 1.4; font-size: 10pt; padding: 15mm 20mm; margin: 0; position: relative; }
+                    body { font-family: 'Arial', sans-serif; color: #000; line-height: 1.4; font-size: 10pt; margin: 0; padding: 0; }
                     
-                    /* CSS DA MARCA D'ÁGUA */
+                    /* CONTAINER PRINCIPAL PARA GARANTIR QUE FICA POR CIMA DA LOGO */
+                    .content {
+                        position: relative;
+                        z-index: 10;
+                        padding: 15mm 20mm;
+                    }
+
+                    /* CSS DA MARCA D'ÁGUA À PROVA DE IMPRESSORAS */
                     .watermark {
                         position: fixed;
                         top: 50%;
@@ -257,8 +257,8 @@ export function renderContratos(container) {
                         transform: translate(-50%, -50%);
                         width: 70%;
                         max-width: 500px;
-                        opacity: 0.08; /* Muito suave para não atrapalhar a leitura */
-                        z-index: -1;
+                        opacity: 0.08; /* Suave */
+                        z-index: 1; /* Abaixo do texto, mas acima do fundo do browser */
                         pointer-events: none;
                     }
                     
@@ -277,55 +277,56 @@ export function renderContratos(container) {
                 </style>
             </head>
             <body>
-                <!-- INJEÇÃO DA MARCA D'ÁGUA -->
-                <img src="${logoUrl}" class="watermark" alt="Vando Motos Background">
+                <img src="${logoUrl}" class="watermark" alt="Vando Motos Background" onload="window.print();" onerror="window.print();">
                 
-                <div class="header">
-                    <h2 style="margin:0; font-size: 14pt; background: transparent;">VANDO MOTOS LOCADORA LTDA</h2>
-                    <p style="text-align: center; font-size: 9pt; margin:0;">CNPJ: 28.623.431/0001-23 | Rua Algodoeiro, 4581 - Caladinho, Porto Velho/RO</p>
-                </div>
-                <h1>CONTRATO DE LOCAÇÃO DE VEÍCULO</h1>
-                <p><span class="bold">LOCADOR:</span> VANDO MOTOS LOCADORA LTDA, inscrita no CNPJ sob o nº 28.623.431/0001-23, Nome Fantasia: VANDO MOTOS, com sede na Rua Algodoeiro, nº 4581, Bairro Caladinho, CEP 76.808-252, Porto Velho - RO. Telefone: (69) 3227-1985 / (69) 9222-2722.</p>
-                <p><span class="bold">LOCATÁRIO(A):</span> <span class="bold" style="text-transform:uppercase;">${cli.nome || '___________________________'}</span>, portador(a) do CPF/CNPJ: ${cli.cpf_cnpj || '________________'}, residente e domiciliado(a) na ${enderecoCompleto}. Contato: ${cli.wpp || '________________'}.</p>
-                
-                <h2>CLÁUSULA 1ª - DO OBJETO DA LOCAÇÃO</h2>
-                <ul>
-                    <li><span class="bold">Modelo/Cor:</span> ${vei.modelo || '___________________'}</li>
-                    <li><span class="bold">Placa:</span> ${vei.placa || '_________'}</li>
-                    <li><span class="bold">RENAVAM:</span> ${vei.renavam || '___________________'}</li>
-                    <li><span class="bold">Vistoria Inicial:</span> Veículo entregue com <span class="bold">${combustivelSaida} traço(s) de combustível</span>, higienizado e inspecionado no sistema.</li>
-                </ul>
-                
-                <h2>CLÁUSULA 2ª - DA FINALIDADE E USO</h2>
-                <p>O veículo destina-se a uso exclusivo do LOCATÁRIO, restrito à área urbana e rural limítrofe do município de Porto Velho - RO. É expressamente proibido ceder, emprestar ou sublocar a terceiros, sob pena de apreensão imediata do bem e rescisão contratual.</p>
-                
-                <h2>CLÁUSULA 3ª - DO PRAZO E DEVOLUÇÃO</h2>
-                <p>O presente contrato tem vigência a partir de <span class="bold">${dataInicioStr}</span> com encerramento fixado para <span class="bold">${dataFimStr}</span>. A não devolução do bem no prazo estipulado configura Apropriação Indébita (Art. 168 do Código Penal).</p>
-                
-                <h2>CLÁUSULA 4ª - DOS VALORES, GARANTIAS E PENALIDADES</h2>
-                <p>O LOCATÁRIO pagará a importância de <span class="bold">${utils.formatMoney(c.valor)}</span> pela locação. Concorda expressamente com:</p>
-                <ol>
-                    <li><span class="bold">Atraso na Devolução:</span> Multa imediata de R$ 50,00, acrescida de R$ 50,00 por cada hora excedente ao horário fixado.</li>
-                    <li><span class="bold">Combustível e Limpeza:</span> Taxa de R$ 50,00 por traço faltante de gasolina. Devolução suja gera taxa de lavagem de R$ 50,00 a R$ 150,00.</li>
-                    <li><span class="bold">Caução:</span> Valor retido de <span class="bold">${utils.formatMoney(c.caucao)}</span>, devolvido na vistoria isenta de danos.</li>
-                    <li><span class="bold">Garantia Total:</span> Assinatura de Nota Promissória no valor venal do veículo (Tabela FIPE: ${utils.formatMoney(vei.fipe)}), executável em caso de roubo, furto ou perda total.</li>
-                </ol>
+                <div class="content">
+                    <div class="header">
+                        <h2 style="margin:0; font-size: 14pt; background: transparent;">VANDO MOTOS LOCADORA LTDA</h2>
+                        <p style="text-align: center; font-size: 9pt; margin:0;">CNPJ: 28.623.431/0001-23 | Rua Algodoeiro, 4581 - Caladinho, Porto Velho/RO</p>
+                    </div>
+                    <h1>CONTRATO DE LOCAÇÃO DE VEÍCULO</h1>
+                    <p><span class="bold">LOCADOR:</span> VANDO MOTOS LOCADORA LTDA, inscrita no CNPJ sob o nº 28.623.431/0001-23, Nome Fantasia: VANDO MOTOS, com sede na Rua Algodoeiro, nº 4581, Bairro Caladinho, CEP 76.808-252, Porto Velho - RO. Telefone: (69) 3227-1985 / (69) 9222-2722.</p>
+                    <p><span class="bold">LOCATÁRIO(A):</span> <span class="bold" style="text-transform:uppercase;">${cli.nome || '___________________________'}</span>, portador(a) do CPF/CNPJ: ${cli.cpf_cnpj || '________________'}, residente e domiciliado(a) na ${enderecoCompleto}. Contato: ${cli.wpp || '________________'}.</p>
+                    
+                    <h2>CLÁUSULA 1ª - DO OBJETO DA LOCAÇÃO</h2>
+                    <ul>
+                        <li><span class="bold">Modelo/Cor:</span> ${vei.modelo || '___________________'}</li>
+                        <li><span class="bold">Placa:</span> ${vei.placa || '_________'}</li>
+                        <li><span class="bold">RENAVAM:</span> ${vei.renavam || '___________________'}</li>
+                        <li><span class="bold">Vistoria Inicial:</span> Veículo entregue com <span class="bold">${combustivelSaida} traço(s) de combustível</span>, higienizado e inspecionado no sistema.</li>
+                    </ul>
+                    
+                    <h2>CLÁUSULA 2ª - DA FINALIDADE E USO</h2>
+                    <p>O veículo destina-se a uso exclusivo do LOCATÁRIO, restrito à área urbana e rural limítrofe do município de Porto Velho - RO. É expressamente proibido ceder, emprestar ou sublocar a terceiros, sob pena de apreensão imediata do bem e rescisão contratual.</p>
+                    
+                    <h2>CLÁUSULA 3ª - DO PRAZO E DEVOLUÇÃO</h2>
+                    <p>O presente contrato tem vigência a partir de <span class="bold">${dataInicioStr}</span> com encerramento fixado para <span class="bold">${dataFimStr}</span>. A não devolução do bem no prazo estipulado configura Apropriação Indébita (Art. 168 do Código Penal).</p>
+                    
+                    <h2>CLÁUSULA 4ª - DOS VALORES, GARANTIAS E PENALIDADES</h2>
+                    <p>O LOCATÁRIO pagará a importância de <span class="bold">${utils.formatMoney(c.valor)}</span> pela locação. Concorda expressamente com:</p>
+                    <ol>
+                        <li><span class="bold">Atraso na Devolução:</span> Multa imediata de R$ 50,00, acrescida de R$ 50,00 por cada hora excedente ao horário fixado.</li>
+                        <li><span class="bold">Combustível e Limpeza:</span> Taxa de R$ 50,00 por traço faltante de gasolina. Devolução suja gera taxa de lavagem de R$ 50,00 a R$ 150,00.</li>
+                        <li><span class="bold">Caução:</span> Valor retido de <span class="bold">${utils.formatMoney(c.caucao)}</span>, devolvido na vistoria isenta de danos.</li>
+                        <li><span class="bold">Garantia Total:</span> Assinatura de Nota Promissória no valor venal do veículo (Tabela FIPE: ${utils.formatMoney(vei.fipe)}), executável em caso de roubo, furto ou perda total.</li>
+                    </ol>
 
-                <h2>CLÁUSULA 5ª - DA RESPONSABILIDADE CIVIL, CRIMINAL E DANOS (AVARIAS)</h2>
-                <p>O LOCATÁRIO assume total, integral e exclusiva responsabilidade por quaisquer danos materiais, pessoais, morais ou a terceiros decorrentes do uso do veículo durante a vigência deste contrato. Em caso de acidente, colisão, abalroamento, incêndio, furto ou roubo, o LOCATÁRIO arcará com 100% (cem por cento) dos custos de reparo, substituição de peças, serviços de guincho e mão de obra, realizados obrigatoriamente em oficina de confiança e escolha da LOCADORA.</p>
-                <p>Parágrafo Único: O LOCATÁRIO também se responsabiliza e concorda em indenizar a LOCADORA pelo pagamento das diárias ou semanalidades correspondentes ao período em que o veículo ficar imobilizado na oficina para os devidos reparos (lucros cessantes).</p>
+                    <h2>CLÁUSULA 5ª - DA RESPONSABILIDADE CIVIL, CRIMINAL E DANOS (AVARIAS)</h2>
+                    <p>O LOCATÁRIO assume total, integral e exclusiva responsabilidade por quaisquer danos materiais, pessoais, morais ou a terceiros decorrentes do uso do veículo durante a vigência deste contrato. Em caso de acidente, colisão, abalroamento, incêndio, furto ou roubo, o LOCATÁRIO arcará com 100% (cem por cento) dos custos de reparo, substituição de peças, serviços de guincho e mão de obra, realizados obrigatoriamente em oficina de confiança e escolha da LOCADORA.</p>
+                    <p>Parágrafo Único: O LOCATÁRIO também se responsabiliza e concorda em indenizar a LOCADORA pelo pagamento das diárias ou semanalidades correspondentes ao período em que o veículo ficar imobilizado na oficina para os devidos reparos (lucros cessantes).</p>
 
-                <h2>CLÁUSULA 6ª - DAS INFRAÇÕES DE TRÂNSITO E APREENSÃO</h2>
-                <p>O LOCATÁRIO autoriza desde já a indicação irrevogável do seu nome e CNH como condutor infrator para toda e qualquer multa de trânsito ocorrida no período da locação. Quaisquer despesas com guincho, diárias de pátio do DETRAN/Ciretran e taxas de liberação originadas por condução irregular ou infrações correrão exclusiva e integralmente por conta do LOCATÁRIO.</p>
+                    <h2>CLÁUSULA 6ª - DAS INFRAÇÕES DE TRÂNSITO E APREENSÃO</h2>
+                    <p>O LOCATÁRIO autoriza desde já a indicação irrevogável do seu nome e CNH como condutor infrator para toda e qualquer multa de trânsito ocorrida no período da locação. Quaisquer despesas com guincho, diárias de pátio do DETRAN/Ciretran e taxas de liberação originadas por condução irregular ou infrações correrão exclusiva e integralmente por conta do LOCATÁRIO.</p>
 
-                <h2>CLÁUSULA 7ª - DO FORO</h2>
-                <p>As partes elegem o Foro da Comarca de Porto Velho - RO para dirimir quaisquer litígios oriundos deste contrato.</p>
-                
-                <p style="text-align: right; margin-top: 20px; font-weight: bold;">Porto Velho - RO, ${dataAtualExtenso} às ${horaAtual}.</p>
-                <div class="signatures-container">
-                    <div class="sign-row">
-                        <div class="sign-box"><div class="sign-line"><span class="bold">VANDO MOTOS LOCADORA LTDA</span><br>(Locador)</div></div>
-                        <div class="sign-box-right"><div class="sign-line"><span class="bold" style="text-transform:uppercase;">${cli.nome || 'LOCATÁRIO'}</span><br>(Locatário)</div></div>
+                    <h2>CLÁUSULA 7ª - DO FORO</h2>
+                    <p>As partes elegem o Foro da Comarca de Porto Velho - RO para dirimir quaisquer litígios oriundos deste contrato.</p>
+                    
+                    <p style="text-align: right; margin-top: 20px; font-weight: bold;">Porto Velho - RO, ${dataAtualExtenso} às ${horaAtual}.</p>
+                    <div class="signatures-container">
+                        <div class="sign-row">
+                            <div class="sign-box"><div class="sign-line"><span class="bold">VANDO MOTOS LOCADORA LTDA</span><br>(Locador)</div></div>
+                            <div class="sign-box-right"><div class="sign-line"><span class="bold" style="text-transform:uppercase;">${cli.nome || 'LOCATÁRIO'}</span><br>(Locatário)</div></div>
+                        </div>
                     </div>
                 </div>
             </body>
@@ -334,8 +335,7 @@ export function renderContratos(container) {
 
         janelaPDF.document.write(html);
         janelaPDF.document.close();
-        janelaPDF.focus();
-        setTimeout(() => janelaPDF.print(), 800);
+        // A impressão será chamada automaticamente pela imagem graças ao "onload"
     }
 
     function toggleModal(abrir = true) {
@@ -390,15 +390,14 @@ export function renderContratos(container) {
         const btnRenovar = e.target.closest('.btn-renovar');
         const btnExcluirContrato = e.target.closest('.btn-excluir-contrato');
 
-        // BOTÃO EXCLUIR COM SENHA ADMINISTRATIVA
         if (btnExcluirContrato) {
             const id = Number(btnExcluirContrato.getAttribute('data-id'));
             const c = db.contratos.find(x => x.id === id);
             
-            const senha = prompt("⚠️ AÇÃO RESTRITA ADMINISTRATIVA ⚠️\\n\\nEste registro será apagado permanentemente do banco de dados.\\nDigite a senha administrativa para confirmar a exclusão:");
+            const senha = prompt("⚠️ AÇÃO RESTRITA ADMINISTRATIVA ⚠️\n\nEste registro será apagado permanentemente do banco de dados.\nDigite a senha administrativa para confirmar a exclusão:");
             
+            // SENHA ADMINISTRATIVA AQUI
             if (senha === "admin123") {
-                // Se o contrato apagado ainda estava ativo (locado), libera a moto no pátio
                 if (c && c.status === 'ativo') {
                     const veiIndex = db.veiculos.findIndex(v => v.id === c.veiculo_id);
                     if (veiIndex > -1) db.veiculos[veiIndex].status = 'disponivel';
