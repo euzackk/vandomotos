@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Vando Motos | ERP Enterprise</title>
+    
+    <!-- TAGS DO PWA (O Segredo do App) -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#0a0a0a">
+    <!-- Suporte Especial para iPhones (iOS) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Vando Motos">
+    <link rel="apple-touch-icon" href="./assets/img/logo.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +37,6 @@
 </head>
 <body class="bg-gray-100 text-gray-900 h-screen flex overflow-hidden antialiased selection:bg-brand-main selection:text-black">
 
-    <!-- PORTA-FORTE DE LOGIN -->
     <div id="login-screen" class="fixed inset-0 bg-brand-darker z-[100] flex flex-col items-center justify-center p-4 transition-opacity duration-500">
         <div class="w-full max-w-md bg-brand-dark border border-gray-800 p-6 md:p-8 shadow-[0_0_50px_rgba(250,204,21,0.05)] relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-brand-main"></div>
@@ -52,10 +61,8 @@
         </div>
     </div>
 
-    <!-- OVERLAY ESCURO PARA MOBILE -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-brand-darker/80 backdrop-blur-sm z-30 hidden transition-opacity opacity-0 md:hidden"></div>
 
-    <!-- MENU LATERAL (RESPONSIVO) -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 w-64 bg-brand-darker flex flex-col shrink-0 text-white border-r border-gray-800 h-full shadow-2xl md:shadow-none">
         <div class="py-6 px-6 flex items-center justify-center border-b border-gray-900 bg-brand-dark">
             <img src="./assets/img/logo.png" alt="Vando Motos Logo" class="w-full h-auto max-h-16 object-contain drop-shadow-lg">
@@ -72,11 +79,9 @@
         </div>
     </aside>
 
-    <!-- ÁREA PRINCIPAL -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 relative w-full">
         <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 shrink-0 z-10 shadow-sm backdrop-blur-md bg-white/90">
             <div class="flex items-center gap-3">
-                <!-- BOTÃO HAMBURGUER PARA MOBILE -->
                 <button id="btn-menu-mobile" class="md:hidden text-brand-dark hover:text-brand-main focus:outline-none transition-colors">
                     <i class="ph-bold ph-list text-2xl"></i>
                 </button>
@@ -93,6 +98,16 @@
         <div class="flex-1 overflow-auto p-4 md:p-10 relative custom-scroll" id="app-content"></div>
     </main>
 
+    <!-- INICIALIZAÇÃO DO SERVICE WORKER -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('✅ App Instalável Ativado!'))
+                    .catch(err => console.error('❌ Falha ao ativar o App', err));
+            });
+        }
+    </script>
     <script type="module" src="./src/app.js"></script>
 </body>
 </html>
