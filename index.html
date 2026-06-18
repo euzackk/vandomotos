@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Vando Motos | ERP Enterprise</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -15,9 +15,7 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: { 
-                        brand: { 
-                            dark: '#0a0a0a', darker: '#000000', main: '#facc15', hover: '#eab308', light: '#fefce8'
-                        } 
+                        brand: { dark: '#0a0a0a', darker: '#000000', main: '#facc15', hover: '#eab308', light: '#fefce8' } 
                     },
                     borderRadius: { 'none': '0px', 'sm': '0px', DEFAULT: '2px', 'md': '2px', 'lg': '2px', 'xl': '2px', '2xl': '2px', '3xl': '2px', 'full': '9999px' },
                     boxShadow: { 'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)', 'hard': '4px 4px 0px 0px rgba(0, 0, 0, 0.9)' }
@@ -29,16 +27,14 @@
 </head>
 <body class="bg-gray-100 text-gray-900 h-screen flex overflow-hidden antialiased selection:bg-brand-main selection:text-black">
 
+    <!-- PORTA-FORTE DE LOGIN -->
     <div id="login-screen" class="fixed inset-0 bg-brand-darker z-[100] flex flex-col items-center justify-center p-4 transition-opacity duration-500">
-        <div class="w-full max-w-md bg-brand-dark border border-gray-800 p-8 shadow-[0_0_50px_rgba(250,204,21,0.05)] relative overflow-hidden">
+        <div class="w-full max-w-md bg-brand-dark border border-gray-800 p-6 md:p-8 shadow-[0_0_50px_rgba(250,204,21,0.05)] relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-brand-main"></div>
-            
             <div class="flex justify-center mb-8">
-                <img src="./assets/img/logo.png" alt="Vando Motos" class="h-20 object-contain drop-shadow-lg">
+                <img src="./assets/img/logo.png" alt="Vando Motos" class="h-16 md:h-20 object-contain drop-shadow-lg">
             </div>
-            
             <h2 class="text-white text-center text-lg font-black uppercase tracking-widest mb-6 border-b border-gray-800 pb-4">Acesso Restrito</h2>
-            
             <form id="form-login" class="space-y-5">
                 <div>
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">E-mail Credenciado</label>
@@ -48,27 +44,23 @@
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Palavra-passe</label>
                     <input type="password" id="login-senha" required class="w-full px-4 py-3 bg-gray-900 border border-gray-700 text-white focus:border-brand-main outline-none transition-colors font-mono text-sm">
                 </div>
-                
-                <div id="login-erro" class="hidden text-red-500 text-[11px] font-bold text-center bg-red-900/20 border border-red-900 p-2 uppercase tracking-wider">
-                    Credenciais inválidas. Acesso negado.
-                </div>
-                
+                <div id="login-erro" class="hidden text-red-500 text-[11px] font-bold text-center bg-red-900/20 border border-red-900 p-2 uppercase tracking-wider"></div>
                 <button type="submit" id="btn-login" class="w-full py-3 mt-4 bg-brand-main text-black font-black uppercase tracking-widest hover:bg-brand-hover transition-colors flex justify-center items-center gap-2 shadow-hard">
                     <i class="ph-bold ph-lock-key text-lg"></i> Autenticar Sessão
                 </button>
             </form>
         </div>
-        <div class="mt-8 flex items-center gap-2 text-gray-600 text-[10px] font-mono uppercase tracking-widest">
-            <i class="ph-fill ph-shield-check text-emerald-600 text-base"></i> Protocolo de Segurança Supabase
-        </div>
     </div>
 
-    <aside class="w-64 bg-brand-darker flex flex-col shrink-0 text-white border-r border-gray-800 z-20 relative">
-        <div class="py-8 px-6 flex items-center justify-center border-b border-gray-900 bg-brand-dark">
-            <img src="./assets/img/logo.png" alt="Vando Motos Logo" class="w-full h-auto object-contain drop-shadow-lg transform hover:scale-105 transition-transform duration-300">
+    <!-- OVERLAY ESCURO PARA MOBILE -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-brand-darker/80 backdrop-blur-sm z-30 hidden transition-opacity opacity-0 md:hidden"></div>
+
+    <!-- MENU LATERAL (RESPONSIVO) -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 w-64 bg-brand-darker flex flex-col shrink-0 text-white border-r border-gray-800 h-full shadow-2xl md:shadow-none">
+        <div class="py-6 px-6 flex items-center justify-center border-b border-gray-900 bg-brand-dark">
+            <img src="./assets/img/logo.png" alt="Vando Motos Logo" class="w-full h-auto max-h-16 object-contain drop-shadow-lg">
         </div>
         <nav class="p-5 space-y-1.5 flex-1 overflow-y-auto custom-scroll" id="main-menu"></nav>
-        
         <div class="p-5 border-t border-gray-900 bg-brand-dark flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" title="Sistema Online"></div>
@@ -80,18 +72,25 @@
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 relative">
-        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0 z-10 shadow-sm backdrop-blur-md bg-white/90">
-            <h2 id="page-title" class="text-lg font-extrabold text-gray-900 uppercase tracking-tight">Verificando Credenciais...</h2>
-            <div class="flex items-center gap-5">
-                <div class="text-right hidden md:block">
-                    <p class="text-sm font-bold text-gray-800 leading-none">Gestão Central</p>
-                    <span class="text-xs text-gray-500 font-medium" id="current-date"></span>
+    <!-- ÁREA PRINCIPAL -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 relative w-full">
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 shrink-0 z-10 shadow-sm backdrop-blur-md bg-white/90">
+            <div class="flex items-center gap-3">
+                <!-- BOTÃO HAMBURGUER PARA MOBILE -->
+                <button id="btn-menu-mobile" class="md:hidden text-brand-dark hover:text-brand-main focus:outline-none transition-colors">
+                    <i class="ph-bold ph-list text-2xl"></i>
+                </button>
+                <h2 id="page-title" class="text-base md:text-lg font-extrabold text-gray-900 uppercase tracking-tight truncate max-w-[180px] md:max-w-none">Verificando...</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-bold text-gray-800 leading-none" id="user-role-label">Gestão Central</p>
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest" id="current-date"></span>
                 </div>
-                <div class="w-10 h-10 bg-brand-dark text-brand-main flex items-center justify-center font-black text-sm border-2 border-brand-main shadow-sm">VM</div>
+                <div class="w-9 h-9 md:w-10 md:h-10 bg-brand-dark text-brand-main flex items-center justify-center font-black text-sm border-2 border-brand-main shadow-sm">VM</div>
             </div>
         </header>
-        <div class="flex-1 overflow-auto p-6 md:p-10 relative custom-scroll" id="app-content"></div>
+        <div class="flex-1 overflow-auto p-4 md:p-10 relative custom-scroll" id="app-content"></div>
     </main>
 
     <script type="module" src="./src/app.js"></script>
