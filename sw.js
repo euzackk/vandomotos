@@ -1,6 +1,5 @@
-// 🔄 MUDAMOS PARA V2: Sempre que fizer uma grande alteração no sistema, 
-// mude este número (v3, v4, etc.) para forçar os telemóveis a atualizarem.
-const CACHE_NAME = 'vandomotos-pwa-v2'; 
+// MUDAMOS PARA V3 para forçar o telemóvel a puxar o logotipo grande
+const CACHE_NAME = 'vandomotos-pwa-v3'; 
 
 const ASSETS = [
     './',
@@ -15,7 +14,6 @@ const ASSETS = [
     './src/financeiro.js'
 ];
 
-// 1. Instalação: Guarda a nova versão no telemóvel
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
@@ -23,11 +21,9 @@ self.addEventListener('install', event => {
             return cache.addAll(ASSETS);
         })
     );
-    // Força a atualização a acontecer imediatamente, sem esperar que o cliente feche o App
     self.skipWaiting(); 
 });
 
-// 2. Ativação: O Varredor (Apaga a versão antiga)
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
@@ -41,11 +37,9 @@ self.addEventListener('activate', event => {
             );
         })
     );
-    // Diz ao telemóvel para começar a usar a versão nova agora mesmo
     self.clients.claim();
 });
 
-// 3. Interceção: Serve os ficheiros muito rápido
 self.addEventListener('fetch', event => {
     event.respondWith(
         fetch(event.request).catch(() => {
