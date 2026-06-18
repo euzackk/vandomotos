@@ -231,6 +231,12 @@ export function renderContratos(container) {
         const enderecoCompleto = cli.logradouro ? `${cli.logradouro}, ${cli.numero} ${cli.complemento || ''} - ${cli.bairro}, ${cli.cidade}/${cli.uf}` : (cli.endereco || '________________________________________________');
         const combustivelSaida = c.tracos_saida ?? (vei.combustivel || 0);
 
+        // Prepara o caminho correto para a logo na marca d'água
+        let baseUrl = window.location.href;
+        if (baseUrl.endsWith('index.html')) baseUrl = baseUrl.replace('index.html', '');
+        if (!baseUrl.endsWith('/')) baseUrl += '/';
+        const logoUrl = baseUrl + 'assets/img/logo.png';
+
         const janelaPDF = window.open('', '_blank');
         const html = `
             <!DOCTYPE html>
@@ -241,7 +247,20 @@ export function renderContratos(container) {
                 <style>
                     /* Ocultar Cabeçalhos e Rodapés do Navegador (URLs e Data) */
                     @page { size: A4; margin: 0; }
-                    body { font-family: 'Arial', sans-serif; color: #000; line-height: 1.4; font-size: 10pt; padding: 15mm 20mm; margin: 0; }
+                    body { font-family: 'Arial', sans-serif; color: #000; line-height: 1.4; font-size: 10pt; padding: 15mm 20mm; margin: 0; position: relative; }
+                    
+                    /* CSS DA MARCA D'ÁGUA */
+                    .watermark {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 70%;
+                        max-width: 500px;
+                        opacity: 0.08; /* Muito suave para não atrapalhar a leitura */
+                        z-index: -1;
+                        pointer-events: none;
+                    }
                     
                     h1 { text-align: center; font-size: 13pt; font-weight: bold; text-decoration: underline; margin-bottom: 15px; }
                     h2 { font-size: 11pt; font-weight: bold; margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; background: #f0f0f0; padding: 3px; }
@@ -258,6 +277,9 @@ export function renderContratos(container) {
                 </style>
             </head>
             <body>
+                <!-- INJEÇÃO DA MARCA D'ÁGUA -->
+                <img src="${logoUrl}" class="watermark" alt="Vando Motos Background">
+                
                 <div class="header">
                     <h2 style="margin:0; font-size: 14pt; background: transparent;">VANDO MOTOS LOCADORA LTDA</h2>
                     <p style="text-align: center; font-size: 9pt; margin:0;">CNPJ: 28.623.431/0001-23 | Rua Algodoeiro, 4581 - Caladinho, Porto Velho/RO</p>
