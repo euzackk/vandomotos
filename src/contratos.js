@@ -227,7 +227,7 @@ export function renderContratos(container) {
         const enderecoCompleto = cli.logradouro ? `${cli.logradouro}, ${cli.numero} ${cli.complemento || ''} - ${cli.bairro}, ${cli.cidade}/${cli.uf}` : (cli.endereco || '________________________________________________');
         const combustivelSaida = c.tracos_saida ?? (vei.combustivel || 0);
 
-        // Caminho da imagem à prova de falhas
+        // O Caminho absoluto garante que a logo seja encontrada pela impressora
         const logoUrl = new URL('./assets/img/logo.png', document.baseURI).href;
 
         const janelaPDF = window.open('', '_blank');
@@ -238,30 +238,41 @@ export function renderContratos(container) {
                 <meta charset="UTF-8">
                 <title>Contrato Oficial - ${cli.nome}</title>
                 <style>
-                    /* Ocultar Cabeçalhos e Rodapés do Navegador */
+                    /* Ocultar Cabeçalhos e Rodapés com URLs do Navegador */
                     @page { size: A4; margin: 0; }
-                    body { font-family: 'Arial', sans-serif; color: #000; line-height: 1.4; font-size: 10pt; margin: 0; padding: 0; }
                     
-                    /* CONTAINER PRINCIPAL PARA GARANTIR QUE FICA POR CIMA DA LOGO */
+                    /* Força impressão exata de transparências e cores */
+                    body { 
+                        font-family: 'Arial', sans-serif; 
+                        color: #000; 
+                        line-height: 1.4; 
+                        font-size: 10pt; 
+                        margin: 0; 
+                        padding: 0; 
+                        position: relative; 
+                        -webkit-print-color-adjust: exact; 
+                        print-color-adjust: exact;
+                    }
+                    
+                    /* A MÁGICA DA MARCA D'ÁGUA EM TODAS AS PÁGINAS */
+                    .watermark {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 400px; /* Tamanho médio fixo, não distorce */
+                        opacity: 0.08; /* Suave, não prejudica a leitura */
+                        z-index: -10; /* Fica no fundo absoluto do papel */
+                        pointer-events: none;
+                    }
+                    
+                    /* O texto fica por cima do fundo e com margens internas */
                     .content {
                         position: relative;
                         z-index: 10;
                         padding: 15mm 20mm;
                     }
 
-                    /* CSS DA MARCA D'ÁGUA À PROVA DE IMPRESSORAS */
-                    .watermark {
-                        position: fixed;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        width: 70%;
-                        max-width: 500px;
-                        opacity: 0.08; /* Suave */
-                        z-index: 1; /* Abaixo do texto, mas acima do fundo do browser */
-                        pointer-events: none;
-                    }
-                    
                     h1 { text-align: center; font-size: 13pt; font-weight: bold; text-decoration: underline; margin-bottom: 15px; }
                     h2 { font-size: 11pt; font-weight: bold; margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; background: #f0f0f0; padding: 3px; }
                     p { text-align: justify; margin-bottom: 6px; }
@@ -335,7 +346,7 @@ export function renderContratos(container) {
 
         janelaPDF.document.write(html);
         janelaPDF.document.close();
-        // A impressão será chamada automaticamente pela imagem graças ao "onload"
+        // window.print() será chamado via evento onload da imagem para garantir que apareça
     }
 
     function toggleModal(abrir = true) {
@@ -390,6 +401,7 @@ export function renderContratos(container) {
         const btnRenovar = e.target.closest('.btn-renovar');
         const btnExcluirContrato = e.target.closest('.btn-excluir-contrato');
 
+        // BOTÃO EXCLUIR COM SENHA ADMINISTRATIVA
         if (btnExcluirContrato) {
             const id = Number(btnExcluirContrato.getAttribute('data-id'));
             const c = db.contratos.find(x => x.id === id);
