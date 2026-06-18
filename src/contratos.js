@@ -3,13 +3,13 @@ import { db, saveDB, utils } from './db.js';
 export function renderContratos(container) {
     container.innerHTML = `
         <div class="flex flex-col h-full fade-enter">
-            <div class="flex justify-between items-center mb-6">
-                <div class="relative w-full max-w-md">
-                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div class="relative w-full md:max-w-md">
+                    <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     <input type="text" id="busca-contratos" placeholder="Buscar por cliente, placa ou número do contrato..." class="w-full pl-10 pr-4 py-2 border border-gray-200 text-sm focus:ring-0 outline-none transition shadow-sm">
                 </div>
-                <button id="btn-novo-contrato" class="bg-brand-dark hover:bg-black text-white px-5 py-2.5 font-bold text-sm flex items-center gap-2 border border-gray-800 transition-all shadow-hard">
-                    <i class="ph ph-handshake text-brand-main text-lg"></i> Firmar Novo Contrato
+                <button id="btn-novo-contrato" class="w-full md:w-auto justify-center bg-brand-dark hover:bg-black text-white px-5 py-3 md:py-2.5 font-bold text-sm flex items-center gap-2 border border-gray-800 transition-all shadow-hard">
+                    <i class="ph-bold ph-handshake text-brand-main text-lg"></i> Firmar Novo Contrato
                 </button>
             </div>
 
@@ -39,6 +39,7 @@ export function renderContratos(container) {
 
         <div id="modal-contrato" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity opacity-0">
             <div class="bg-white border border-gray-900 w-full max-w-4xl shadow-2xl overflow-hidden transform scale-95 transition-transform flex flex-col" id="modal-contrato-panel">
+                
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                     <div>
                         <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">Emissão de Contrato de Locação</h2>
@@ -348,7 +349,6 @@ export function renderContratos(container) {
         const btnWpp = e.target.closest('.btn-wpp');
         const btnRenovar = e.target.closest('.btn-renovar');
 
-        // BOTÃO 1: WHATSAPP MAGICO
         if (btnWpp) {
             const id = Number(btnWpp.getAttribute('data-id'));
             const c = db.contratos.find(x => x.id === id);
@@ -371,7 +371,6 @@ export function renderContratos(container) {
             }
         }
 
-        // BOTÃO 2: RENOVAÇÃO AUTOMÁTICA DE PRAZO
         if (btnRenovar) {
             const id = Number(btnRenovar.getAttribute('data-id'));
             const c = db.contratos.find(x => x.id === id);
