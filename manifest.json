@@ -1,1 +1,23 @@
-
+{
+  "name": "Vando Motos ERP",
+  "short_name": "Vando Motos",
+  "description": "Sistema de Gestão de Frotas e Locação",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#facc15",
+  "icons": [
+    {
+      "src": "./assets/img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
