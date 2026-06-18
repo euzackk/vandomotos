@@ -3,18 +3,16 @@ import { db, saveDB, utils } from './db.js';
 export function renderClientes(container) {
     container.innerHTML = `
         <div class="flex flex-col h-full fade-enter">
-            <!-- Barra Superior de Ações -->
-            <div class="flex justify-between items-center mb-6">
-                <div class="relative w-full max-w-md">
-                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div class="relative w-full md:max-w-md">
+                    <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     <input type="text" id="busca-clientes" placeholder="Buscar por código, nome, CPF/CNPJ ou WhatsApp..." class="w-full pl-10 pr-4 py-2 border border-gray-200 text-sm focus:ring-0 outline-none transition shadow-sm">
                 </div>
-                <button id="btn-novo-cliente" class="bg-brand-dark hover:bg-black text-white px-5 py-2.5 font-bold text-sm flex items-center gap-2 border border-gray-800 transition-all shadow-hard">
-                    <i class="ph ph-user-plus text-brand-main text-lg"></i> Cadastrar Cliente
+                <button id="btn-novo-cliente" class="w-full md:w-auto justify-center bg-brand-dark hover:bg-black text-white px-5 py-3 md:py-2.5 font-bold text-sm flex items-center gap-2 border border-gray-800 transition-all shadow-hard">
+                    <i class="ph-bold ph-user-plus text-brand-main text-lg"></i> Cadastrar Cliente
                 </button>
             </div>
 
-            <!-- Tabela de Dados Principais -->
             <div class="bg-white border border-gray-200 shadow-soft flex-1 overflow-hidden flex flex-col">
                 <div class="overflow-x-auto flex-1 custom-scroll">
                     <table class="w-full text-left border-collapse whitespace-nowrap text-sm">
@@ -31,7 +29,6 @@ export function renderClientes(container) {
                         <tbody id="tb-clientes" class="divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
-                <!-- Estado Vazio -->
                 <div id="clientes-empty" class="hidden flex-col items-center justify-center py-16 text-center">
                     <i class="ph ph-users text-5xl text-gray-300 mb-3"></i>
                     <p class="text-sm text-gray-500 font-bold uppercase tracking-wider">Base de clientes vazia na Nuvem</p>
@@ -39,11 +36,9 @@ export function renderClientes(container) {
             </div>
         </div>
 
-        <!-- MODAL MASTER: DOSSIÊ DO CLIENTE -->
         <div id="modal-cliente" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity opacity-0">
             <div class="bg-white border border-gray-900 w-full max-w-4xl shadow-2xl overflow-hidden transform scale-95 transition-transform flex flex-col max-h-[90vh]" id="modal-cliente-panel">
                 
-                <!-- Cabeçalho do Modal -->
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                     <div>
                         <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight" id="modal-cliente-title">Dossiê Cadastral</h2>
@@ -52,22 +47,17 @@ export function renderClientes(container) {
                     <button id="btn-fechar-modal" class="text-gray-400 hover:text-red-600 transition p-1"><i class="ph ph-x text-2xl"></i></button>
                 </div>
 
-                <!-- Corpo com 3 Abas -->
                 <div class="bg-gray-100 px-6 border-b border-gray-200 flex gap-2">
                     <button id="tab-dados" class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-brand-dark text-brand-dark bg-white mt-1 transition-colors">1. Dados Pessoais</button>
                     <button id="tab-endereco" class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-500 hover:text-gray-800 mt-1 transition-colors">2. Localização (CEP)</button>
                     <button id="tab-historico" class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-gray-500 hover:text-gray-800 mt-1 transition-colors">3. Histórico de Uso</button>
                 </div>
 
-                <!-- Formulário / Conteúdo -->
                 <form id="form-cliente" class="overflow-y-auto flex-1 p-6 space-y-6 custom-scroll bg-white">
                     <input type="hidden" id="c-id">
                     <input type="hidden" id="c-codigo-gerado">
 
-                    <!-- ABA 1: DADOS PESSOAIS -->
                     <div id="conteudo-tab-dados" class="space-y-6">
-                        
-                        <!-- Bloco 1.1: Identificação Técnica -->
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nome Completo / Razão Social *</label>
@@ -86,7 +76,6 @@ export function renderClientes(container) {
                             </div>
                         </div>
 
-                        <!-- Bloco 1.2: Contato Principal -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">WhatsApp Pessoal *</label>
@@ -94,7 +83,6 @@ export function renderClientes(container) {
                             </div>
                         </div>
 
-                        <!-- Bloco 1.3: As 3 Referências Pessoais exigidas -->
                         <div class="border-t border-gray-200 pt-4">
                             <h3 class="text-xs font-extrabold text-brand-hover uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <i class="ph ph-phone-call text-base"></i> Triagem de Segurança (3 Referências)
@@ -118,7 +106,6 @@ export function renderClientes(container) {
                             </div>
                         </div>
 
-                        <!-- Bloco 1.4: Digitalização de Documentos -->
                         <div class="border-t border-gray-200 pt-4">
                             <h3 class="text-xs font-extrabold text-gray-900 uppercase tracking-widest mb-3">
                                 Arquivo Digital (Identidade / CNH)
@@ -135,7 +122,6 @@ export function renderClientes(container) {
                         </div>
                     </div>
 
-                    <!-- ABA 2: ENDEREÇO (INTEGRAÇÃO VIA CEP) -->
                     <div id="conteudo-tab-endereco" class="hidden space-y-6">
                         <div class="bg-brand-light border border-brand-main p-4 flex items-start gap-3">
                             <i class="ph-fill ph-map-pin text-2xl text-brand-hover"></i>
@@ -182,7 +168,6 @@ export function renderClientes(container) {
                             </div>
                         </div>
 
-                        <!-- Anexo Comprovante de Residência -->
                         <div class="border-t border-gray-200 pt-4">
                             <h3 class="text-xs font-extrabold text-gray-900 uppercase tracking-widest mb-3">
                                 Comprovante de Endereço Digital
@@ -199,7 +184,6 @@ export function renderClientes(container) {
                         </div>
                     </div>
 
-                    <!-- ABA 3: HISTÓRICO DE LOCAÇÕES DA MOTO -->
                     <div id="conteudo-tab-historico" class="hidden space-y-4">
                         <div class="bg-gray-50 border p-4">
                             <h4 class="text-xs font-bold text-gray-500 uppercase font-mono tracking-wider mb-3">Linha do Tempo de Aluguéis</h4>
@@ -215,14 +199,12 @@ export function renderClientes(container) {
                                         </tr>
                                     </thead>
                                     <tbody id="tb-historico-locacoes" class="divide-y divide-gray-100 text-gray-700 font-medium">
-                                        <!-- Injetado via JS -->
-                                    </tbody>
+                                        </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Rodapé de Ações do Form -->
                     <div class="pt-4 border-t border-gray-100 flex gap-3 bg-white" id="modal-actions-footer">
                         <button type="button" id="btn-cancelar" class="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition">Cancelar</button>
                         <button type="submit" class="flex-1 px-4 py-2.5 bg-brand-dark text-brand-main font-black hover:bg-black shadow-hard border border-gray-900 transition">Gravar Dossiê Completo</button>
@@ -231,14 +213,12 @@ export function renderClientes(container) {
             </div>
         </div>
 
-        <!-- POP-UP LIGHTBOX EXCLUSIVO PARA INSPEÇÃO DE IMAGENS -->
         <div id="lightbox-viewer" class="fixed inset-0 bg-black/90 z-[60] hidden flex flex-col items-center justify-center p-4">
-            <button id="btn-fechar-lightbox" class="absolute top-5 right-5 text-white bg-gray-950 px-4 py-2 border border-gray-700 font-bold flex items-center gap-2"><i class="ph ph-x"></i> Fechar Inspeção</button>
+            <button id="btn-fechar-lightbox" class="absolute top-5 right-5 text-white bg-gray-950 px-4 py-2 border border-gray-700 font-bold flex items-center gap-2 hover:bg-gray-800 transition"><i class="ph ph-x"></i> Fechar Inspeção</button>
             <img id="img-lightbox-src" src="" alt="Inspeção de Documento" class="max-w-full max-h-[85vh] object-contain border-4 border-white shadow-2xl bg-gray-900">
         </div>
     `;
 
-    // Mapeamentos DOM Estritos
     const tbody = document.getElementById('tb-clientes');
     const emptyState = document.getElementById('clientes-empty');
     const modal = document.getElementById('modal-cliente');
@@ -248,7 +228,6 @@ export function renderClientes(container) {
     const selTipo = document.getElementById('c-tipo');
     const lblDoc = document.getElementById('lbl-doc');
 
-    // Mapeamentos das Abas
     const tabDados = document.getElementById('tab-dados');
     const tabEndereco = document.getElementById('tab-endereco');
     const tabHistorico = document.getElementById('tab-historico');
@@ -258,7 +237,6 @@ export function renderClientes(container) {
     const conTabHistorico = document.getElementById('conteudo-tab-historico');
     const footerActions = document.getElementById('modal-actions-footer');
 
-    // Mapeamento de Endereço Automático
     const inputCep = document.getElementById('c-cep');
     const inputLogradouro = document.getElementById('c-logradouro');
     const inputNumero = document.getElementById('c-numero');
@@ -267,25 +245,17 @@ export function renderClientes(container) {
     const inputCidade = document.getElementById('c-cidade');
     const inputUf = document.getElementById('c-uf');
 
-    // Mapeamento de Anexos
     const fileCnh = document.getElementById('file-cnh');
     const fileRes = document.getElementById('file-residencia');
     const boxCnh = document.getElementById('preview-cnh-box');
     const boxRes = document.getElementById('preview-res-box');
     
-    // Lightbox DOM
     const lightbox = document.getElementById('lightbox-viewer');
     const lightboxImg = document.getElementById('img-lightbox-src');
 
-    // Memória Temporária de Imagens em Base64
     let imgCnhBase64 = "";
     let imgResBase64 = "";
 
-    // ------------------------------------------------------------------------
-    // API VIACEP - BUSCA DE ENDEREÇO
-    // ------------------------------------------------------------------------
-    
-    // Máscara de CEP (00000-000)
     inputCep.addEventListener('input', (e) => {
         let v = e.target.value.replace(/\D/g, '');
         if (v.length > 5) {
@@ -294,7 +264,6 @@ export function renderClientes(container) {
         e.target.value = v;
     });
 
-    // Busca ao perder o foco (Blur)
     inputCep.addEventListener('blur', async (e) => {
         const cepLimpo = e.target.value.replace(/\D/g, '');
         if (cepLimpo.length === 8) {
@@ -308,7 +277,6 @@ export function renderClientes(container) {
                     inputBairro.value = dadosCep.bairro || '';
                     inputCidade.value = dadosCep.localidade || '';
                     inputUf.value = dadosCep.uf || '';
-                    // Joga o cursor do usuário pro campo de Número automaticamente
                     inputNumero.focus();
                 } else {
                     inputLogradouro.value = "";
@@ -320,10 +288,6 @@ export function renderClientes(container) {
             }
         }
     });
-
-    // ------------------------------------------------------------------------
-    // CONTROLES DE INTERFACE E ABAS
-    // ------------------------------------------------------------------------
 
     selTipo.addEventListener('change', () => {
         lblDoc.innerText = selTipo.value === 'PF' ? 'CPF *' : 'CNPJ *';
@@ -359,12 +323,11 @@ export function renderClientes(container) {
         } else {
             tabHistorico.className = classesAtivas;
             conTabHistorico.classList.remove('hidden');
-            footerActions.classList.add('hidden'); // Histórico é só leitura
+            footerActions.classList.add('hidden');
             carregarHistoricoLocacoes();
         }
     }
 
-    // Leitor de arquivos de imagem e conversor Base64
     function escutarArquivo(input, callback) {
         input.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -500,8 +463,6 @@ export function renderClientes(container) {
             tipo: selTipo.value,
             cpf_cnpj: document.getElementById('c-cpf-cnpj').value,
             wpp: document.getElementById('c-wpp').value,
-            
-            // Novos Campos de Endereço Fracionado
             cep: inputCep.value,
             logradouro: inputLogradouro.value,
             numero: inputNumero.value,
@@ -509,10 +470,7 @@ export function renderClientes(container) {
             bairro: inputBairro.value,
             cidade: inputCidade.value,
             uf: inputUf.value.toUpperCase(),
-            
-            // Opcional: mantendo a string inteira para compatibilidade com outros módulos que chamam c.endereco
             endereco: `${inputLogradouro.value}, ${inputNumero.value} ${inputComplemento.value ? '- ' + inputComplemento.value : ''} - ${inputBairro.value}, ${inputCidade.value}/${inputUf.value.toUpperCase()} - CEP: ${inputCep.value}`,
-
             ref_nome_1: document.getElementById('c-ref-nome-1').value,
             ref_fone_1: document.getElementById('c-ref-fone-1').value,
             ref_nome_2: document.getElementById('c-ref-nome-2').value,
@@ -568,9 +526,8 @@ export function renderClientes(container) {
             document.getElementById('c-cpf-cnpj').value = c.cpf_cnpj;
             document.getElementById('c-wpp').value = c.wpp;
             
-            // Povoando Endereço (Suporte a clientes velhos que só tinham o campo 'endereco' unificado)
             inputCep.value = c.cep || '';
-            inputLogradouro.value = c.logradouro || (c.endereco ? c.endereco : ''); // Fallback seguro
+            inputLogradouro.value = c.logradouro || (c.endereco ? c.endereco : '');
             inputNumero.value = c.numero || '';
             inputComplemento.value = c.complemento || '';
             inputBairro.value = c.bairro || '';
