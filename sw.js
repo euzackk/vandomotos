@@ -1,5 +1,4 @@
-// MUDAMOS PARA V10 para forçar a descarga do compilador nativo de PDFs e layouts
-const CACHE_NAME = 'vandomotos-pwa-v10'; 
+const CACHE_NAME = 'vandomotos-pwa-v11'; 
 
 const ASSETS = [
     './',
