@@ -1,5 +1,5 @@
-// MUDAMOS PARA V11 para libertar o scroll vertical no telemóvel
-const CACHE_NAME = 'vandomotos-pwa-v11'; 
+// MUDAMOS PARA V12 para adicionar a aba dedicada de filtro da Blacklist
+const CACHE_NAME = 'vandomotos-pwa-v12'; 
 
 const ASSETS = [
     './',
