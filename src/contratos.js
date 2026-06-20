@@ -1,6 +1,9 @@
 import { db, saveDB, utils } from './db.js';
 
 export function renderContratos(container) {
+    // Garante que a lista de espera existe na base de dados
+    if (!db.espera) db.espera = [];
+
     container.innerHTML = `
         <div class="flex flex-col h-full fade-enter">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -8,9 +11,14 @@ export function renderContratos(container) {
                     <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     <input type="text" id="busca-contratos" placeholder="Buscar por cliente, placa ou número do contrato..." class="w-full pl-10 pr-4 py-2 border border-gray-200 text-sm focus:ring-0 outline-none transition shadow-sm">
                 </div>
-                <button id="btn-novo-contrato" class="w-full md:w-auto justify-center bg-brand-dark hover:bg-black text-white px-5 py-3 md:py-2.5 font-bold text-sm flex items-center gap-2 border border-gray-800 transition-all shadow-hard">
-                    <i class="ph-bold ph-handshake text-brand-main text-lg"></i> Firmar Novo Contrato
-                </button>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <button id="btn-fila-espera" class="flex-1 md:flex-none justify-center bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 px-4 py-3 md:py-2.5 font-bold text-sm flex items-center gap-2 transition-all shadow-sm">
+                        <i class="ph-bold ph-users-three text-brand-hover text-lg"></i> Reservas <span id="badge-fila" class="bg-brand-dark text-brand-main text-[10px] px-1.5 py-0.5 rounded-sm font-black">0</span>
+                    </button>
+                    <button id="btn-novo-contrato" class="flex-1 md:flex-none justify-center bg-brand-dark hover:bg-black text-white px-5 py-3 md:py-2.5 font-bold text-sm flex items-center gap-2 border border-gray-800 transition-all shadow-hard">
+                        <i class="ph-bold ph-handshake text-brand-main text-lg"></i> Novo Contrato
+                    </button>
+                </div>
             </div>
 
             <div class="bg-white border border-gray-200 shadow-soft flex-1 overflow-hidden flex flex-col">
@@ -29,7 +37,6 @@ export function renderContratos(container) {
                         <tbody id="tb-contratos" class="divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
-                
                 <div id="contratos-empty" class="hidden flex-col items-center justify-center py-16 text-center">
                     <i class="ph ph-folder-open text-5xl text-gray-300 mb-3"></i>
                     <p class="text-sm text-gray-500 font-bold uppercase tracking-wider">Nenhum contrato registado na base de dados</p>
@@ -37,9 +44,42 @@ export function renderContratos(container) {
             </div>
         </div>
 
-        <div id="modal-contrato" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity opacity-0">
-            <div class="bg-white border border-gray-900 w-full max-w-4xl shadow-2xl overflow-hidden transform scale-95 transition-transform flex flex-col" id="modal-contrato-panel">
+        <div id="modal-fila" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity opacity-0">
+            <div class="bg-white border border-gray-900 w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-transform flex flex-col max-h-[80vh]" id="modal-fila-panel">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                    <h2 class="text-sm font-black text-gray-900 uppercase tracking-wider">Fila de Espera (Reservas)</h2>
+                    <button id="btn-fechar-fila" class="text-gray-400 hover:text-red-600 transition"><i class="ph ph-x text-xl"></i></button>
+                </div>
                 
+                <form id="form-fila" class="p-4 border-b border-gray-200 bg-brand-light/30">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <input type="text" id="fila-nome" required placeholder="Nome do Cliente" class="w-full px-3 py-2 border border-brand-main/50 text-sm focus:border-brand-main outline-none font-bold">
+                        </div>
+                        <div>
+                            <input type="text" id="fila-wpp" required placeholder="WhatsApp (Ex: 6999...)" class="w-full px-3 py-2 border border-brand-main/50 text-sm focus:border-brand-main outline-none">
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="fila-pref" placeholder="Preferência (Ex: Honda Fan 160)" class="w-full px-3 py-2 border border-brand-main/50 text-sm focus:border-brand-main outline-none">
+                        <button type="submit" class="bg-brand-dark hover:bg-black text-brand-main font-bold px-4 text-xs uppercase tracking-widest transition shadow-sm whitespace-nowrap">Adicionar</button>
+                    </div>
+                </form>
+
+                <div class="flex-1 overflow-y-auto p-0 bg-gray-50 custom-scroll min-h-[250px]">
+                    <table class="w-full text-left text-sm">
+                        <tbody id="tb-fila" class="divide-y divide-gray-200"></tbody>
+                    </table>
+                    <div id="fila-vazia" class="hidden flex-col items-center justify-center py-10 text-center">
+                        <i class="ph-fill ph-users-three text-4xl text-gray-300 mb-2"></i>
+                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">A fila de espera está vazia.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-contrato" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-opacity opacity-0">
+            <div class="bg-white border border-gray-900 w-full max-w-4xl shadow-2xl overflow-hidden transform scale-95 transition-transform flex flex-col" id="modal-contrato-panel">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                     <div>
                         <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">Emissão de Contrato de Locação</h2>
@@ -93,33 +133,104 @@ export function renderContratos(container) {
         </div>
     `;
 
-    // ============================================================================
-    // SISTEMA DE CORTE CIRCULAR (REDONDO) PARA A MARCA D'ÁGUA
-    // ============================================================================
+    // LÓGICA DA FILA DE ESPERA ==============================================
+    const modalFila = document.getElementById('modal-fila');
+    const modalFilaPanel = document.getElementById('modal-fila-panel');
+    const tbFila = document.getElementById('tb-fila');
+    const filaVazia = document.getElementById('fila-vazia');
+    const badgeFila = document.getElementById('badge-fila');
+
+    function atualizarFila() {
+        tbFila.innerHTML = '';
+        badgeFila.innerText = db.espera.length;
+        
+        if (db.espera.length === 0) {
+            filaVazia.classList.remove('hidden');
+            filaVazia.classList.add('flex');
+        } else {
+            filaVazia.classList.add('hidden');
+            filaVazia.classList.remove('flex');
+            
+            db.espera.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-100 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-4 py-3 w-10 text-center"><span class="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded-sm text-xs">${index + 1}º</span></td>
+                    <td class="px-4 py-3">
+                        <div class="font-bold text-gray-800">${item.nome}</div>
+                        <div class="text-[10px] text-gray-500 uppercase">${item.preferencia || 'Qualquer Moto'}</div>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <div class="flex gap-2 justify-end">
+                            <button class="btn-wpp-fila bg-emerald-50 text-emerald-600 border border-emerald-200 p-1.5 rounded-sm hover:bg-emerald-500 hover:text-white transition" data-wpp="${item.telefone}" data-nome="${item.nome}"><i class="ph-bold ph-whatsapp text-lg"></i></button>
+                            <button class="btn-remover-fila bg-red-50 text-red-600 border border-red-200 p-1.5 rounded-sm hover:bg-red-600 hover:text-white transition" data-id="${item.id}"><i class="ph-bold ph-trash text-lg"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbFila.appendChild(tr);
+            });
+        }
+    }
+
+    document.getElementById('btn-fila-espera').addEventListener('click', () => {
+        atualizarFila();
+        modalFila.classList.remove('hidden');
+        setTimeout(() => { modalFila.classList.remove('opacity-0'); modalFilaPanel.classList.remove('scale-95'); }, 10);
+    });
+
+    document.getElementById('btn-fechar-fila').addEventListener('click', () => {
+        modalFila.classList.add('opacity-0');
+        modalFilaPanel.classList.add('scale-95');
+        setTimeout(() => modalFila.classList.add('hidden'), 200);
+    });
+
+    document.getElementById('form-fila').addEventListener('submit', (e) => {
+        e.preventDefault();
+        db.espera.push({
+            id: Date.now(),
+            nome: document.getElementById('fila-nome').value,
+            telefone: document.getElementById('fila-wpp').value,
+            preferencia: document.getElementById('fila-pref').value,
+            data: new Date().toISOString()
+        });
+        saveDB();
+        atualizarFila();
+        document.getElementById('form-fila').reset();
+    });
+
+    tbFila.addEventListener('click', (e) => {
+        const btnDel = e.target.closest('.btn-remover-fila');
+        const btnWpp = e.target.closest('.btn-wpp-fila');
+        
+        if (btnDel) {
+            const id = Number(btnDel.getAttribute('data-id'));
+            db.espera = db.espera.filter(x => x.id !== id);
+            saveDB();
+            atualizarFila();
+        }
+        
+        if (btnWpp) {
+            const fone = btnWpp.getAttribute('data-wpp').replace(/\D/g, '');
+            const nome = btnWpp.getAttribute('data-nome');
+            let txt = `Olá *${nome.trim()}*! Tudo bem? 👋\n\nAqui é da *VANDO MOTOS LOCADORA*.\nUma moto acabou de ficar disponível no nosso pátio!\n\nVocê ainda tem interesse em alugar conosco? Responda o mais rápido possível para segurarmos a sua reserva! 🏍️`;
+            window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(txt)}`, '_blank');
+        }
+    });
+
+    // LÓGICA DO CONTRATO E MARCA D'ÁGUA =====================================
     let watermarkBase64 = null;
-    
     const preImg = new Image();
     preImg.crossOrigin = 'Anonymous';
     preImg.src = new URL('./assets/img/logo.png', document.baseURI).href;
     preImg.onload = () => {
         const cvs = document.createElement('canvas');
         const size = Math.max(preImg.width, preImg.height);
-        cvs.width = size;
-        cvs.height = size;
+        cvs.width = size; cvs.height = size;
         const ctx = cvs.getContext('2d');
-        
         ctx.globalAlpha = 0.08; 
-        
-        // Recorte circular
-        ctx.beginPath();
-        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.clip();
-        
-        const dx = (size - preImg.width) / 2;
-        const dy = (size - preImg.height) / 2;
+        ctx.beginPath(); ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+        const dx = (size - preImg.width) / 2; const dy = (size - preImg.height) / 2;
         ctx.drawImage(preImg, dx, dy);
-        
         watermarkBase64 = cvs.toDataURL('image/png');
     };
 
@@ -138,7 +249,11 @@ export function renderContratos(container) {
         selVeiculo.innerHTML = '<option value="">-- Moto Livre no Pátio --</option>';
 
         db.clientes.forEach(c => {
-            selCliente.innerHTML += `<option value="${c.id}">${c.codigo || 'S/C'} - ${c.nome} (CPF: ${c.cpf_cnpj})</option>`;
+            if (c.blacklist) {
+                selCliente.innerHTML += `<option value="${c.id}" disabled class="text-red-500 font-bold bg-red-50">⛔ BLOQUEADO: ${c.nome} [BLACKLIST]</option>`;
+            } else {
+                selCliente.innerHTML += `<option value="${c.id}">${c.codigo || 'S/C'} - ${c.nome} (CPF: ${c.cpf_cnpj})</option>`;
+            }
         });
 
         db.veiculos.filter(v => v.status === 'disponivel').forEach(v => {
@@ -150,6 +265,8 @@ export function renderContratos(container) {
         const termo = inputBusca.value.toLowerCase();
         tbody.innerHTML = '';
         
+        badgeFila.innerText = db.espera.length;
+
         const filtrados = db.contratos.filter(c => {
             const cli = db.clientes.find(x => x.id === c.cliente_id) || { nome: '' };
             const vei = db.veiculos.find(x => x.id === c.veiculo_id) || { placa: '' };
@@ -238,6 +355,7 @@ export function renderContratos(container) {
     }
 
     function gerarPDFContrato(contratoId) {
+        // [CÓDIGO DE PDF INALTERADO MANTIDO PERFEITO...]
         const c = db.contratos.find(x => x.id === contratoId);
         if(!c) return;
         
@@ -254,10 +372,8 @@ export function renderContratos(container) {
         const combustivelSaida = c.tracos_saida ?? (vei.combustivel || 0);
 
         const pdfContainer = document.createElement('div');
-        // REGRAS ESTRITAS DE RENDERIZAÇÃO DE FONTE E QUEBRA DE PÁGINA (AVOID-BREAK)
         pdfContainer.innerHTML = `
             <div style="font-family: Arial, sans-serif; color: #000; font-size: 13px; line-height: 1.6; letter-spacing: 0.1px; padding: 0; width: 100%;">
-                
                 <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #000; padding-bottom: 10px;">
                     <h2 style="margin:0; font-size: 18px; font-weight: bold; text-transform: uppercase;">VANDO MOTOS LOCADORA LTDA</h2>
                     <p style="margin:0; font-size: 12px;">CNPJ: 28.623.431/0001-23 | Rua Algodoeiro, 4581 - Caladinho, Porto Velho/RO</p>
@@ -335,9 +451,9 @@ export function renderContratos(container) {
             margin:       15,
             filename:     `Contrato_${cli.nome.replace(/\s+/g, '_')}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, // letterRendering resolve as letras coladas
+            html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:    { mode: ['css', 'avoid-all'] } // avoid-all impede o corte agressivo do papel
+            pagebreak:    { mode: ['css', 'avoid-all'] }
         };
 
         html2pdf().set(opt).from(pdfContainer).toPdf().get('pdf').then(function (pdf) {
@@ -345,7 +461,6 @@ export function renderContratos(container) {
             for (let i = 1; i <= totalPages; i++) {
                 pdf.setPage(i);
                 if(watermarkBase64) {
-                    // Tamanho menor e discreto: 45mm (4.5 centímetros)
                     const size = 45; 
                     const x = (210 - size) / 2;
                     const y = (297 - size) / 2;
@@ -373,12 +488,20 @@ export function renderContratos(container) {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
         
+        const clienteId = Number(selCliente.value);
+        const cliTarget = db.clientes.find(c => c.id === clienteId);
+        
+        if (cliTarget && cliTarget.blacklist) {
+            alert(`⛔ OPERAÇÃO BLOQUEADA ⛔\n\nEste cliente encontra-se na Blacklist.\nMotivo: ${cliTarget.blacklist_motivo || 'Não informado.'}`);
+            return;
+        }
+
         const veiId = Number(selVeiculo.value);
         const veiculoObj = db.veiculos.find(v => v.id === veiId);
         
         const novoContrato = {
             id: Date.now(),
-            cliente_id: Number(selCliente.value),
+            cliente_id: clienteId,
             veiculo_id: veiId,
             data_inicio: inputInicio.value,
             data_fim: document.getElementById('loc-data-fim').value,
@@ -493,6 +616,16 @@ export function renderContratos(container) {
 
                 saveDB();
                 atualizarTabela();
+
+                // GATILHO DA FILA DE ESPERA (RESERVA DE MOTO)
+                if (db.espera.length > 0) {
+                    const primeiro = db.espera[0];
+                    if (confirm(`⚠️ ATENÇÃO: HÁ CLIENTES NA FILA DE ESPERA! ⚠️\n\nA moto retornou ao pátio e o cliente "${primeiro.nome}" é o primeiro da fila.\n\nDeseja avisá-lo agora pelo WhatsApp?`)) {
+                        const fone = primeiro.telefone.replace(/\\D/g, '');
+                        let txt = `Olá *${primeiro.nome.trim()}*! Tudo bem? 👋\n\nAqui é da *VANDO MOTOS LOCADORA*.\nUma moto acabou de ser libertada no nosso pátio!\n\nVocê ainda tem interesse em alugar conosco? Responda o mais rápido possível para segurarmos a sua reserva! 🏍️`;
+                        window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(txt)}`, '_blank');
+                    }
+                }
             }
         }
     });
