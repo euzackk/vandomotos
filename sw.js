@@ -1,3 +1,4 @@
+// MUDAMOS PARA V11 para libertar o scroll vertical no telemóvel
 const CACHE_NAME = 'vandomotos-pwa-v11'; 
 
 const ASSETS = [
