@@ -4,42 +4,43 @@ export function renderFinanceiro(container) {
     container.innerHTML = `
         <div class="flex flex-col h-full fade-enter">
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
                 <div class="bg-white p-5 border border-gray-200 shadow-soft relative overflow-hidden group">
                     <div class="absolute -right-4 -top-4 w-16 h-16 bg-blue-50 rounded-full group-hover:scale-150 transition-transform"></div>
-                    <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1 relative z-10"><i class="ph ph-wallet"></i> Saldo em Caixa</p>
-                    <h3 class="text-3xl font-black text-gray-900 relative z-10" id="dash-saldo">R$ 0,00</h3>
+                    <p class="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1 relative z-10"><i class="ph ph-wallet"></i> Saldo em Caixa</p>
+                    <h3 class="text-2xl md:text-3xl font-black text-gray-900 relative z-10" id="dash-saldo">R$ 0,00</h3>
                 </div>
                 <div class="bg-emerald-50 border border-emerald-200 p-5 shadow-soft relative overflow-hidden group">
                     <div class="absolute -right-4 -top-4 w-16 h-16 bg-emerald-100 rounded-full group-hover:scale-150 transition-transform"></div>
-                    <p class="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-1 relative z-10"><i class="ph ph-trend-up"></i> Entradas (Receitas)</p>
-                    <h3 class="text-3xl font-black text-emerald-600 relative z-10" id="dash-entradas">R$ 0,00</h3>
+                    <p class="text-[10px] md:text-xs font-bold text-emerald-700 uppercase tracking-widest mb-1 relative z-10"><i class="ph ph-trend-up"></i> Entradas (Receitas)</p>
+                    <h3 class="text-2xl md:text-3xl font-black text-emerald-600 relative z-10" id="dash-entradas">R$ 0,00</h3>
                 </div>
                 <div class="bg-red-50 border border-red-200 p-5 shadow-soft relative overflow-hidden group">
                     <div class="absolute -right-4 -top-4 w-16 h-16 bg-red-100 rounded-full group-hover:scale-150 transition-transform"></div>
-                    <p class="text-xs font-bold text-red-700 uppercase tracking-widest mb-1 relative z-10"><i class="ph ph-trend-down"></i> Saídas (Despesas)</p>
-                    <h3 class="text-3xl font-black text-red-600 relative z-10" id="dash-saidas">R$ 0,00</h3>
+                    <p class="text-[10px] md:text-xs font-bold text-red-700 uppercase tracking-widest mb-1 relative z-10"><i class="ph ph-trend-down"></i> Saídas (Despesas)</p>
+                    <h3 class="text-2xl md:text-3xl font-black text-red-600 relative z-10" id="dash-saidas">R$ 0,00</h3>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 overflow-hidden">
-                <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden">
-                    <div class="bg-gray-50 border-b border-gray-200 px-5 py-4 flex justify-between items-center">
+                
+                <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden min-h-[300px]">
+                    <div class="bg-gray-50 border-b border-gray-200 px-4 py-4 flex justify-between items-center shrink-0">
                         <h3 class="font-bold text-gray-800 flex items-center gap-2 uppercase tracking-wider text-xs"><i class="ph-fill ph-bell-ringing text-brand-hover text-base"></i> Painel de Cobranças</h3>
                         <span class="text-[10px] bg-gray-900 text-white px-2 py-1 font-bold tracking-widest uppercase" id="qtd-cobrancas">0 ATIVAS</span>
                     </div>
-                    <div class="p-5 flex-1 overflow-y-auto space-y-4 bg-white custom-scroll" id="lista-receber"></div>
+                    <div class="p-3 md:p-5 flex-1 overflow-y-auto space-y-3 bg-white custom-scroll" id="lista-receber"></div>
                 </div>
 
-                <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden">
-                    <div class="bg-gray-50 border-b border-gray-200 px-5 py-4 flex justify-between items-center">
-                        <h3 class="font-bold text-gray-800 flex items-center gap-2 uppercase tracking-wider text-xs"><i class="ph-fill ph-list-numbers text-gray-400 text-base"></i> Livro Caixa (Extrato)</h3>
-                        <div class="flex gap-2">
-                            <button id="btn-exportar-excel" class="text-[10px] bg-emerald-50 hover:bg-emerald-500 text-emerald-700 hover:text-white px-3 py-1.5 font-bold transition-colors uppercase tracking-widest flex items-center gap-1 border border-emerald-200 shadow-sm rounded-sm" title="Baixar histórico para o Excel">
+                <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden min-h-[300px]">
+                    <div class="bg-gray-50 border-b border-gray-200 px-4 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
+                        <h3 class="font-bold text-gray-800 flex items-center gap-2 uppercase tracking-wider text-xs"><i class="ph-fill ph-list-numbers text-gray-400 text-base"></i> Livro Caixa</h3>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button id="btn-exportar-excel" class="flex-1 sm:flex-none justify-center text-[10px] bg-emerald-50 hover:bg-emerald-500 text-emerald-700 hover:text-white px-3 py-2 sm:py-1.5 font-bold transition-colors uppercase tracking-widest flex items-center gap-1 border border-emerald-200 shadow-sm rounded-sm" title="Baixar histórico para o Excel">
                                 <i class="ph-bold ph-microsoft-excel text-sm"></i> Exportar
                             </button>
-                            <button id="btn-novo-lancamento" class="text-[10px] bg-gray-200 hover:bg-brand-main hover:text-brand-dark text-gray-700 px-3 py-1.5 font-bold transition-colors uppercase tracking-widest flex items-center gap-1 border border-gray-300 rounded-sm">
-                                <i class="ph ph-plus"></i> Manual
+                            <button id="btn-novo-lancamento" class="flex-1 sm:flex-none justify-center text-[10px] bg-gray-200 hover:bg-brand-main hover:text-brand-dark text-gray-700 px-3 py-2 sm:py-1.5 font-bold transition-colors uppercase tracking-widest flex items-center gap-1 border border-gray-300 rounded-sm">
+                                <i class="ph-bold ph-plus text-sm"></i> Manual
                             </button>
                         </div>
                     </div>
@@ -189,39 +190,45 @@ export function renderFinanceiro(container) {
 
                 let statusCor = 'border-gray-200 bg-white';
                 let iconeStatus = '<i class="ph-fill ph-clock text-gray-400 text-xl"></i>';
-                let tagStatus = `<span class="text-[10px] text-gray-500 font-bold ml-2">Vence: ${utils.formatDate(dataCobrar)}</span>`;
+                let tagStatus = `<span class="text-[10px] text-gray-500 font-bold">Vence: ${utils.formatDate(dataCobrar)}</span>`;
 
                 if (dataVenc < hoje) {
                     statusCor = 'border-red-500 bg-red-50/50';
                     iconeStatus = '<i class="ph-fill ph-warning-circle text-red-500 text-xl"></i>';
-                    tagStatus = `<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 font-bold uppercase tracking-wider ml-2 shadow-sm">Atrasado (${utils.formatDate(dataCobrar)})</span>`;
+                    tagStatus = `<span class="text-[9px] bg-red-600 text-white px-1.5 py-0.5 font-bold uppercase tracking-wider shadow-sm rounded-sm">Atrasado (${utils.formatDate(dataCobrar)})</span>`;
                 } else if (dataVenc.getTime() === hoje.getTime()) {
                     statusCor = 'border-brand-main bg-brand-light';
                     iconeStatus = '<i class="ph-fill ph-warning text-brand-hover text-xl"></i>';
-                    tagStatus = `<span class="text-[10px] bg-brand-hover text-black px-1.5 py-0.5 font-bold uppercase tracking-wider ml-2 shadow-sm">Vence Hoje</span>`;
+                    tagStatus = `<span class="text-[9px] bg-brand-hover text-black px-1.5 py-0.5 font-bold uppercase tracking-wider shadow-sm rounded-sm">Vence Hoje</span>`;
                 }
 
+                // ESTRUTURA RESPONSIVA QUE IMPEDE O ESMAGAMENTO DOS BOTÕES
                 listaReceber.innerHTML += `
-                    <div class="border ${statusCor} p-4 flex justify-between items-center transition-all hover:shadow-soft group">
-                        <div class="flex items-start gap-3">
-                            <div class="mt-0.5">${iconeStatus}</div>
-                            <div>
-                                <div class="font-bold text-gray-900 text-sm uppercase tracking-tight">${cli.nome} ${tagStatus}</div>
+                    <div class="border ${statusCor} p-3 md:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all hover:shadow-soft group">
+                        
+                        <div class="flex items-start gap-3 w-full sm:w-auto">
+                            <div class="mt-0.5 shrink-0">${iconeStatus}</div>
+                            <div class="flex-1">
+                                <div class="font-bold text-gray-900 text-sm uppercase tracking-tight flex flex-wrap items-center gap-2">
+                                    ${cli.nome.split(' ')[0]} ${cli.nome.split(' ')[1] || ''}
+                                    <div class="mt-0.5 sm:mt-0">${tagStatus}</div>
+                                </div>
                                 <div class="text-[11px] text-gray-500 mt-1 flex items-center gap-2">
-                                    <span class="bg-white border border-gray-300 px-1 font-mono font-bold text-gray-800">${vei.placa}</span>
+                                    <span class="bg-white border border-gray-300 px-1 font-mono font-bold text-gray-800 shadow-sm">${vei.placa}</span>
                                     <span>Doc: VM-${c.id.toString().slice(-5)}</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-col items-end gap-2">
-                            <span class="font-black text-gray-900 font-mono">${utils.formatMoney(c.valor)}</span>
-                            <div class="flex gap-1">
-                                <button class="btn-wpp-cobranca text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 hover:bg-emerald-500 hover:text-white px-2 py-1.5 transition border border-emerald-200 shadow-sm flex items-center gap-1 rounded-sm" data-id="${c.id}" title="Cobrar via WhatsApp">
-                                    <i class="ph-bold ph-whatsapp text-sm"></i>
+                        
+                        <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-3 sm:pt-0 border-t border-gray-200/50 sm:border-0 mt-1 sm:mt-0 gap-2">
+                            <span class="font-black text-gray-900 font-mono text-lg sm:text-base">${utils.formatMoney(c.valor)}</span>
+                            <div class="flex gap-2 w-full sm:w-auto justify-end">
+                                <button class="btn-wpp-cobranca flex-1 sm:flex-none justify-center text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 hover:bg-emerald-500 hover:text-white px-2 sm:px-3 py-2 sm:py-1.5 transition border border-emerald-200 shadow-sm flex items-center gap-1 rounded-sm" data-id="${c.id}" title="Cobrar via WhatsApp">
+                                    <i class="ph-bold ph-whatsapp text-sm"></i> WPP
                                 </button>
-                                <button class="btn-abrir-baixa text-[10px] font-black uppercase tracking-widest bg-gray-900 text-white px-3 py-1.5 hover:bg-black transition shadow-hard border border-gray-900 rounded-sm" 
+                                <button class="btn-abrir-baixa flex-1 sm:flex-none justify-center text-[10px] font-black uppercase tracking-widest bg-gray-900 text-white px-3 sm:px-4 py-2 sm:py-1.5 hover:bg-black transition shadow-hard border border-gray-900 rounded-sm" 
                                     data-id="${c.id}" data-valor="${c.valor}" data-nome="${cli.nome}">
-                                    Liquidar Fatura
+                                    Liquidar
                                 </button>
                             </div>
                         </div>
@@ -256,19 +263,19 @@ export function renderFinanceiro(container) {
 
                 tbHistorico.innerHTML += `
                     <tr class="hover:bg-gray-50 transition-colors group">
-                        <td class="px-5 py-4 w-10 text-center">${iconeSeta}</td>
-                        <td class="px-5 py-4">
+                        <td class="px-4 py-3 w-8 text-center shrink-0">${iconeSeta}</td>
+                        <td class="px-2 py-3">
                             <div class="text-[10px] text-gray-400 font-mono font-bold uppercase">${utils.formatDate(f.data)}</div>
                         </td>
-                        <td class="px-5 py-4">
-                            <div class="text-xs font-bold text-gray-800 uppercase">${f.descricao}</div>
-                            <div class="text-[10px] text-gray-500 mt-0.5 tracking-wider">${f.categoria || 'Locação Semanal'}</div>
+                        <td class="px-2 py-3">
+                            <div class="text-xs font-bold text-gray-800 uppercase truncate max-w-[120px] md:max-w-none" title="${f.descricao}">${f.descricao}</div>
+                            <div class="text-[9px] text-gray-500 mt-0.5 tracking-wider truncate max-w-[120px] md:max-w-none">${f.categoria || 'Locação Semanal'}</div>
                         </td>
-                        <td class="px-5 py-4 text-right">
+                        <td class="px-4 py-3 text-right">
                             <div class="text-sm font-black font-mono ${corValor}">${tipoReal === 'entrada' ? '+' : '-'} ${utils.formatMoney(valorNum)}</div>
                         </td>
-                        <td class="px-5 py-4 text-right">
-                            <button class="btn-deletar-registo text-gray-300 hover:text-red-500 transition px-2" data-id="${f.id}" title="Eliminar Registo"><i class="ph-fill ph-trash"></i></button>
+                        <td class="px-4 py-3 text-right">
+                            <button class="btn-deletar-registo text-gray-300 hover:text-red-500 transition px-1" data-id="${f.id}" title="Eliminar Registo"><i class="ph-fill ph-trash text-base"></i></button>
                         </td>
                     </tr>
                 `;
@@ -310,7 +317,7 @@ export function renderFinanceiro(container) {
             const valorFormatado = utils.formatMoney(c.valor);
             let texto = `Olá *${cli.nome.trim()}*, tudo bem? 👋\n\n`;
             texto += `Aqui é da *VANDO MOTOS LOCADORA*.\n`;
-            texto += `Consta no nosso sistema que a semanalidade da moto (Placa: *${vei.placa}*) no valor de *${valorFormatado}* encontra-se disponível para renovação.\n\n`;
+            texto += `Consta no nosso sistema que a semanalidade da moto (Placa: *${vei.placa}*) no valor de *${valorFormatado}* encontra-se disponível para liquidação.\n\n`;
             texto += `Poderia nos enviar o comprovante Pix por aqui assim que efetuar o pagamento? Obrigado! 🏍️`;
 
             const fone = cli.wpp.replace(/\D/g, '');
@@ -360,7 +367,7 @@ export function renderFinanceiro(container) {
         const vei = db.veiculos.find(x => x.id === c.veiculo_id) || { placa: '' };
         const cli = db.clientes.find(x => x.id === c.cliente_id) || { nome: 'Cliente' };
 
-        let desc = `Recebimento Semanal - ${cli.nome} (${vei.placa})`;
+        let desc = `Recebimento Semanal - ${cli.nome.split(' ')[0]} (${vei.placa})`;
         if (valorExtra > 0) {
             desc += ` [+ R$ ${valorExtra} : ${motivoExtra || 'Taxas adicionais'}]`;
         }
@@ -434,34 +441,28 @@ export function renderFinanceiro(container) {
         }
     });
 
-    // ==========================================
-    // EXPORTAÇÃO CONTÁBIL PARA EXCEL (CSV)
-    // ==========================================
     document.getElementById('btn-exportar-excel').addEventListener('click', () => {
         if (db.financeiro.length === 0) {
             alert("Não existem movimentos no livro caixa para exportar.");
             return;
         }
 
-        // Cabeçalho das Colunas do Excel
         const cabecalhos = ["Nº Documento", "Data do Registo", "Tipo de Movimento", "Categoria", "Descrição", "Valor(R$)"];
         const linhasCSV = [cabecalhos.join(",")];
 
-        // Varre a base de dados
         db.financeiro.forEach(f => {
             const linha = [
                 f.id,
                 utils.formatDate(f.data),
                 f.tipo === 'entrada' ? 'RECEITA' : 'DESPESA',
-                `"${f.categoria || 'N/A'}"`, // Aspas para não bugar o Excel se houver vírgulas na frase
+                `"${f.categoria || 'N/A'}"`,
                 `"${f.descricao || 'N/A'}"`,
-                f.tipo === 'entrada' ? f.valor : `-${f.valor}` // Valor negativo se for despesa
+                f.tipo === 'entrada' ? f.valor : `-${f.valor}`
             ];
             linhasCSV.push(linha.join(","));
         });
 
-        // Junta tudo num arquivo e faz o download
-        const blob = new Blob([linhasCSV.join("\\n")], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([linhasCSV.join("\n")], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         
