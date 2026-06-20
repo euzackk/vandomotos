@@ -58,6 +58,22 @@ export function renderClientes(container) {
                     <input type="hidden" id="c-codigo-gerado">
 
                     <div id="conteudo-tab-dados" class="space-y-6">
+                        
+                        <div class="border border-red-200 bg-red-50 p-4 rounded-sm">
+                            <h3 class="text-xs font-black text-red-700 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <i class="ph-fill ph-warning-octagon text-lg"></i> Painel de Segurança (Blacklist)
+                            </h3>
+                            <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input type="checkbox" id="c-blacklist" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer">
+                                    <label for="c-blacklist" class="text-xs font-bold text-red-900 uppercase cursor-pointer">Bloquear Cliente</label>
+                                </div>
+                                <div class="flex-1 w-full">
+                                    <input type="text" id="c-blacklist-motivo" disabled placeholder="Motivo do bloqueio (Ex: Calote, Moto Destruída, etc.)" class="w-full px-3 py-2 border border-red-300 text-sm focus:border-red-500 outline-none bg-white text-red-800 placeholder-red-300 disabled:opacity-50 disabled:bg-gray-100">
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nome Completo / Razão Social *</label>
@@ -199,7 +215,7 @@ export function renderClientes(container) {
                                         </tr>
                                     </thead>
                                     <tbody id="tb-historico-locacoes" class="divide-y divide-gray-100 text-gray-700 font-medium">
-                                        </tbody>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -237,6 +253,16 @@ export function renderClientes(container) {
     const conTabHistorico = document.getElementById('conteudo-tab-historico');
     const footerActions = document.getElementById('modal-actions-footer');
 
+    // Lógica do Blacklist
+    const checkBlacklist = document.getElementById('c-blacklist');
+    const inputMotivoBL = document.getElementById('c-blacklist-motivo');
+
+    checkBlacklist.addEventListener('change', (e) => {
+        inputMotivoBL.disabled = !e.target.checked;
+        if (!e.target.checked) inputMotivoBL.value = '';
+        else inputMotivoBL.focus();
+    });
+
     const inputCep = document.getElementById('c-cep');
     const inputLogradouro = document.getElementById('c-logradouro');
     const inputNumero = document.getElementById('c-numero');
@@ -258,9 +284,7 @@ export function renderClientes(container) {
 
     inputCep.addEventListener('input', (e) => {
         let v = e.target.value.replace(/\D/g, '');
-        if (v.length > 5) {
-            v = v.replace(/^(\d{5})(\d)/, '$1-$2');
-        }
+        if (v.length > 5) v = v.replace(/^(\d{5})(\d)/, '$1-$2');
         e.target.value = v;
     });
 
@@ -405,11 +429,16 @@ export function renderClientes(container) {
             emptyState.classList.remove('flex');
 
             filtrados.forEach(c => {
+                // Selo Visual da Blacklist
+                const nomeFormatado = c.blacklist 
+                    ? `<span class="text-gray-400 line-through">${c.nome}</span> <span class="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 ml-1 uppercase tracking-widest rounded-sm shadow-sm inline-flex items-center gap-1"><i class="ph-bold ph-warning-octagon"></i> Blacklist</span>` 
+                    : `<span class="text-gray-900">${c.nome}</span>`;
+
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors";
+                tr.className = `hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors ${c.blacklist ? 'bg-red-50/20' : ''}`;
                 tr.innerHTML = `
                     <td class="px-6 py-4 font-mono font-bold text-brand-hover">${c.codigo || '---'}</td>
-                    <td class="px-6 py-4 font-bold text-gray-900">${c.nome}</td>
+                    <td class="px-6 py-4 font-bold text-gray-900">${nomeFormatado}</td>
                     <td class="px-6 py-4"><span class="text-xs px-1.5 py-0.5 font-bold bg-gray-900 text-white">${c.tipo}</span></td>
                     <td class="px-6 py-4 text-gray-600 font-mono text-xs">${c.cpf_cnpj}</td>
                     <td class="px-6 py-4 text-gray-700">${c.wpp}</td>
@@ -437,6 +466,12 @@ export function renderClientes(container) {
                 document.getElementById('c-id').value = '';
                 document.getElementById('c-codigo-gerado').value = '';
                 document.getElementById('modal-cliente-code').innerText = "Código: Gerado automaticamente";
+                
+                // Limpa Blacklist Visual
+                checkBlacklist.checked = false;
+                inputMotivoBL.value = '';
+                inputMotivoBL.disabled = true;
+
                 imgCnhBase64 = "";
                 imgResBase64 = "";
                 boxCnh.classList.add('hidden');
@@ -478,7 +513,10 @@ export function renderClientes(container) {
             ref_nome_3: document.getElementById('c-ref-nome-3').value,
             ref_fone_3: document.getElementById('c-ref-fone-3').value,
             img_cnh: imgCnhBase64,
-            img_residencia: imgResBase64
+            img_residencia: imgResBase64,
+            // Grava os dados da Blacklist
+            blacklist: checkBlacklist.checked,
+            blacklist_motivo: inputMotivoBL.value
         };
 
         if (id) {
@@ -519,6 +557,11 @@ export function renderClientes(container) {
             document.getElementById('c-codigo-gerado').value = c.codigo || '';
             document.getElementById('modal-cliente-code').innerText = `Código: ${c.codigo || 'Legado'}`;
             
+            // Carrega os dados da Blacklist
+            checkBlacklist.checked = c.blacklist || false;
+            inputMotivoBL.value = c.blacklist_motivo || '';
+            inputMotivoBL.disabled = !(c.blacklist || false);
+
             document.getElementById('c-nome').value = c.nome;
             selTipo.value = c.tipo || 'PF';
             lblDoc.innerText = selTipo.value === 'PF' ? 'CPF *' : 'CNPJ *';
