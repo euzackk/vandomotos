@@ -3,7 +3,6 @@ import { db, saveDB, utils } from './db.js';
 export function renderFinanceiro(container) {
     container.innerHTML = `
         <div class="flex flex-col min-h-full fade-enter">
-            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 shrink-0">
                 <div class="bg-white p-5 border border-gray-200 shadow-soft relative overflow-hidden group">
                     <div class="absolute -right-4 -top-4 w-16 h-16 bg-blue-50 rounded-full group-hover:scale-150 transition-transform"></div>
@@ -23,7 +22,6 @@ export function renderFinanceiro(container) {
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 lg:overflow-hidden pb-4 lg:pb-0">
-                
                 <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden h-[450px] lg:h-auto">
                     <div class="bg-gray-50 border-b border-gray-200 px-4 py-4 flex justify-between items-center shrink-0">
                         <h3 class="font-bold text-gray-800 flex items-center gap-2 uppercase tracking-wider text-xs"><i class="ph-fill ph-bell-ringing text-brand-hover text-base"></i> Painel de Cobranças</h3>
@@ -36,7 +34,7 @@ export function renderFinanceiro(container) {
                     <div class="bg-gray-50 border-b border-gray-200 px-4 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
                         <h3 class="font-bold text-gray-800 flex items-center gap-2 uppercase tracking-wider text-xs"><i class="ph-fill ph-list-numbers text-gray-400 text-base"></i> Livro Caixa</h3>
                         <div class="flex gap-2 w-full sm:w-auto">
-                            <button id="btn-exportar-excel" class="flex-1 sm:flex-none justify-center text-[10px] bg-emerald-50 hover:bg-emerald-500 text-emerald-700 hover:text-white px-3 py-2 sm:py-1.5 font-bold transition-colors uppercase tracking-widest flex items-center gap-1 border border-emerald-200 shadow-sm rounded-sm" title="Baixar histórico para o Excel">
+                            <button id="btn-exportar-excel" class="flex-1 sm:flex-none justify-center text-[10px] bg-emerald-50 hover:bg-emerald-500 text-emerald-700 hover:text-white px-3 py-2 sm:py-1.5 font-bold transition-colors uppercase tracking-widest flex items-center gap-1 border border-emerald-200 shadow-sm rounded-sm">
                                 <i class="ph-bold ph-microsoft-excel text-sm"></i> Exportar
                             </button>
                             <button id="btn-novo-lancamento" class="flex-1 sm:flex-none justify-center text-[10px] bg-gray-200 hover:bg-brand-main hover:text-brand-dark text-gray-700 px-3 py-2 sm:py-1.5 font-bold transition-colors uppercase tracking-widest flex items-center gap-1 border border-gray-300 rounded-sm">
@@ -349,6 +347,58 @@ export function renderFinanceiro(container) {
         setTimeout(() => modalBaixa.classList.add('hidden'), 200);
     });
 
+    // ============================================================================
+    // MOTOR DE GERAÇÃO DE RECIBO TÉRMICO (Mini PDF)
+    // ============================================================================
+    function gerarRecibo(nomeCliente, modelo, placa, valorTotal, proximoVencimento) {
+        const logoUrl = new URL('./assets/img/logo.png', document.baseURI).href;
+        const dataAtual = new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+
+        const div = document.createElement('div');
+        // Estilo de impressora de cupom fiscal / térmica
+        div.style.width = '300px';
+        div.style.padding = '10mm';
+        div.style.fontFamily = 'Courier New, Courier, monospace';
+        div.style.fontSize = '12px';
+        div.style.color = '#000';
+        div.style.background = '#FFF';
+
+        div.innerHTML = `
+            <div style="text-align: center; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px;">
+                <img src="${logoUrl}" style="width: 80px; margin-bottom: 8px;">
+                <br><strong style="font-size: 14px;">VANDO MOTOS</strong>
+                <br><span style="font-size: 10px;">CNPJ: 28.623.431/0001-23</span>
+            </div>
+            <h3 style="text-align: center; margin: 10px 0; font-size: 14px; font-weight: bold;">RECIBO DE PAGAMENTO</h3>
+            <div style="margin-bottom: 15px;">
+                <p style="margin: 3px 0;"><strong>DATA:</strong> ${dataAtual}</p>
+                <p style="margin: 3px 0;"><strong>CLIENTE:</strong> ${nomeCliente}</p>
+                <p style="margin: 3px 0;"><strong>MOTO:</strong> ${modelo} (${placa})</p>
+            </div>
+            <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 10px 0; margin-bottom: 15px; display: flex; justify-content: space-between;">
+                <strong>VALOR PAGO:</strong>
+                <strong>R$ ${Number(valorTotal).toFixed(2).replace('.',',')}</strong>
+            </div>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <p style="margin: 0 0 5px 0; font-size: 10px;">PRÓXIMO VENCIMENTO</p>
+                <p style="margin: 0; font-size: 16px; font-weight: bold;">${proximoVencimento}</p>
+            </div>
+            <div style="text-align: center; font-size: 10px; border-top: 1px dashed #000; padding-top: 10px;">
+                Obrigado pela preferência!
+            </div>
+        `;
+
+        const opt = {
+            margin:       0,
+            filename:     `Recibo_${nomeCliente.replace(/\s+/g, '_')}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: [80, 150], orientation: 'portrait' } // Formato térmico (80mm de largura)
+        };
+
+        html2pdf().set(opt).from(div).save();
+    }
+
     formBaixa.addEventListener('submit', (e) => {
         e.preventDefault();
         
@@ -382,7 +432,8 @@ export function renderFinanceiro(container) {
         const dataAntiga = new Date(dataAntigaStr);
         dataAntiga.setMinutes(dataAntiga.getMinutes() + dataAntiga.getTimezoneOffset());
         dataAntiga.setDate(dataAntiga.getDate() + 7);
-        c.vencimento = dataAntiga.toISOString().split('T')[0];
+        const novaDataVencimentoStr = dataAntiga.toISOString().split('T')[0];
+        c.vencimento = novaDataVencimentoStr;
 
         if(c.data_fim) {
             const dataFimAtual = new Date(c.data_fim);
@@ -393,13 +444,19 @@ export function renderFinanceiro(container) {
         saveDB();
         atualizarTela();
         document.getElementById('btn-fechar-baixa').click();
+
+        // GATILHO DO RECIBO
+        const dataFormatada = utils.formatDate(novaDataVencimentoStr);
+        if(confirm("Pagamento recebido com sucesso! \nDeseja gerar o Recibo Eletrónico em PDF para enviar ao cliente?")) {
+            gerarRecibo(cli.nome, vei.modelo, vei.placa, valorTotal, dataFormatada);
+        }
     });
 
+    // ... (o resto das funções do financeiro, como Novo Lançamento, mantém-se igual abaixo)
     document.getElementById('btn-novo-lancamento').addEventListener('click', () => {
         const agora = new Date();
         agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
         document.getElementById('lan-data').value = agora.toISOString().split('T')[0];
-        
         modalLan.classList.remove('hidden');
         setTimeout(() => { modalLan.classList.remove('opacity-0'); modalLanPanel.classList.remove('scale-95'); }, 10);
     });
@@ -429,7 +486,7 @@ export function renderFinanceiro(container) {
         const btnDel = e.target.closest('.btn-deletar-registo');
         if(btnDel) {
             const id = Number(btnDel.getAttribute('data-id'));
-            if(confirm("Aviso: Eliminar este registo alterará o Saldo em Caixa atual. Confirma a exclusão deste movimento?")) {
+            if(confirm("Aviso: Eliminar este registo alterará o Saldo em Caixa atual. Confirma a exclusão?")) {
                 db.financeiro = db.financeiro.filter(f => f.id !== id);
                 saveDB();
                 atualizarTela();
@@ -438,34 +495,15 @@ export function renderFinanceiro(container) {
     });
 
     document.getElementById('btn-exportar-excel').addEventListener('click', () => {
-        if (db.financeiro.length === 0) {
-            alert("Não existem movimentos no livro caixa para exportar.");
-            return;
-        }
-
+        if (db.financeiro.length === 0) return alert("Não existem movimentos no livro caixa para exportar.");
         const cabecalhos = ["Nº Documento", "Data do Registo", "Tipo de Movimento", "Categoria", "Descrição", "Valor(R$)"];
         const linhasCSV = [cabecalhos.join(",")];
-
         db.financeiro.forEach(f => {
-            const linha = [
-                f.id,
-                utils.formatDate(f.data),
-                f.tipo === 'entrada' ? 'RECEITA' : 'DESPESA',
-                `"${f.categoria || 'N/A'}"`,
-                `"${f.descricao || 'N/A'}"`,
-                f.tipo === 'entrada' ? f.valor : `-${f.valor}`
-            ];
-            linhasCSV.push(linha.join(","));
+            linhasCSV.push([f.id, utils.formatDate(f.data), f.tipo === 'entrada' ? 'RECEITA' : 'DESPESA', `"${f.categoria || 'N/A'}"`, `"${f.descricao || 'N/A'}"`, f.tipo === 'entrada' ? f.valor : `-${f.valor}`].join(","));
         });
-
-        const blob = new Blob([linhasCSV.join("\n")], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        
-        const dataHoje = new Date().toISOString().split('T')[0];
-        link.href = url;
-        link.download = `Balanco_Caixa_VandoMotos_${dataHoje}.csv`;
-        
+        link.href = URL.createObjectURL(new Blob([linhasCSV.join("\n")], { type: 'text/csv;charset=utf-8;' }));
+        link.download = `Balanco_Caixa_VandoMotos_${new Date().toISOString().split('T')[0]}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
