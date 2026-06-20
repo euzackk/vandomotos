@@ -1,11 +1,11 @@
 import { db, saveDB, utils } from './db.js';
 
 export function renderContratos(container) {
-    // Garante que a lista de espera existe na base de dados
     if (!db.espera) db.espera = [];
 
     container.innerHTML = `
         <div class="flex flex-col h-full fade-enter">
+            <!-- Barra Superior com Fila de Espera -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div class="relative w-full md:max-w-md">
                     <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -21,6 +21,7 @@ export function renderContratos(container) {
                 </div>
             </div>
 
+            <!-- Tabela de Contratos -->
             <div class="bg-white border border-gray-200 shadow-soft flex-1 overflow-hidden flex flex-col">
                 <div class="overflow-x-auto flex-1 custom-scroll">
                     <table class="w-full text-left border-collapse whitespace-nowrap text-sm">
@@ -44,6 +45,7 @@ export function renderContratos(container) {
             </div>
         </div>
 
+        <!-- MODAL DA FILA DE ESPERA -->
         <div id="modal-fila" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity opacity-0">
             <div class="bg-white border border-gray-900 w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-transform flex flex-col max-h-[80vh]" id="modal-fila-panel">
                 <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
@@ -78,6 +80,7 @@ export function renderContratos(container) {
             </div>
         </div>
 
+        <!-- MODAL MASTER: FIRMAR CONTRATO -->
         <div id="modal-contrato" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-opacity opacity-0">
             <div class="bg-white border border-gray-900 w-full max-w-4xl shadow-2xl overflow-hidden transform scale-95 transition-transform flex flex-col" id="modal-contrato-panel">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
@@ -210,7 +213,7 @@ export function renderContratos(container) {
         }
         
         if (btnWpp) {
-            const fone = btnWpp.getAttribute('data-wpp').replace(/\D/g, '');
+            const fone = btnWpp.getAttribute('data-wpp').replace(/\\D/g, '');
             const nome = btnWpp.getAttribute('data-nome');
             let txt = `Olá *${nome.trim()}*! Tudo bem? 👋\n\nAqui é da *VANDO MOTOS LOCADORA*.\nUma moto acabou de ficar disponível no nosso pátio!\n\nVocê ainda tem interesse em alugar conosco? Responda o mais rápido possível para segurarmos a sua reserva! 🏍️`;
             window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(txt)}`, '_blank');
@@ -354,8 +357,10 @@ export function renderContratos(container) {
         }
     }
 
+    // ============================================================================
+    // GERAÇÃO DE PDF - MODO COMPACTO (1 PÁGINA)
+    // ============================================================================
     function gerarPDFContrato(contratoId) {
-        // [CÓDIGO DE PDF INALTERADO MANTIDO PERFEITO...]
         const c = db.contratos.find(x => x.id === contratoId);
         if(!c) return;
         
@@ -372,73 +377,75 @@ export function renderContratos(container) {
         const combustivelSaida = c.tracos_saida ?? (vei.combustivel || 0);
 
         const pdfContainer = document.createElement('div');
+        // REGRAS ESTRITAS DE COMPACTAÇÃO (Tamanho 11px, Line-height menor)
         pdfContainer.innerHTML = `
-            <div style="font-family: Arial, sans-serif; color: #000; font-size: 13px; line-height: 1.6; letter-spacing: 0.1px; padding: 0; width: 100%;">
-                <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #000; padding-bottom: 10px;">
-                    <h2 style="margin:0; font-size: 18px; font-weight: bold; text-transform: uppercase;">VANDO MOTOS LOCADORA LTDA</h2>
-                    <p style="margin:0; font-size: 12px;">CNPJ: 28.623.431/0001-23 | Rua Algodoeiro, 4581 - Caladinho, Porto Velho/RO</p>
+            <div style="font-family: Arial, sans-serif; color: #000; font-size: 11px; line-height: 1.3; letter-spacing: 0px; padding: 0; width: 100%;">
+                
+                <div style="text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px;">
+                    <h2 style="margin:0; font-size: 14px; font-weight: bold; text-transform: uppercase;">VANDO MOTOS LOCADORA LTDA</h2>
+                    <p style="margin:0; font-size: 10px;">CNPJ: 28.623.431/0001-23 | Rua Algodoeiro, 4581 - Caladinho, Porto Velho/RO</p>
                 </div>
                 
-                <h1 style="text-align: center; font-size: 16px; font-weight: bold; text-decoration: underline; margin-bottom: 20px;">CONTRATO DE LOCAÇÃO DE VEÍCULO</h1>
+                <h1 style="text-align: center; font-size: 13px; font-weight: bold; text-decoration: underline; margin-bottom: 10px;">CONTRATO DE LOCAÇÃO DE VEÍCULO</h1>
 
-                <div style="margin-bottom: 20px; page-break-inside: avoid;">
-                    <p style="margin: 0 0 10px 0;"><strong>LOCADOR:</strong> VANDO MOTOS LOCADORA LTDA, inscrita no CNPJ sob o nº 28.623.431/0001-23, Nome Fantasia: VANDO MOTOS, com sede na Rua Algodoeiro, nº 4581, Bairro Caladinho, CEP 76.808-252, Porto Velho - RO. Telefone: (69) 3227-1985 / (69) 9222-2722.</p>
+                <div style="margin-bottom: 10px;">
+                    <p style="margin: 0 0 4px 0;"><strong>LOCADOR:</strong> VANDO MOTOS LOCADORA LTDA, inscrita no CNPJ sob o nº 28.623.431/0001-23, Nome Fantasia: VANDO MOTOS, com sede na Rua Algodoeiro, nº 4581, Bairro Caladinho, CEP 76.808-252, Porto Velho - RO. Telefone: (69) 3227-1985 / (69) 9222-2722.</p>
                     <p style="margin: 0;"><strong>LOCATÁRIO(A):</strong> <strong style="text-transform:uppercase;">${cli.nome || '___________________________'}</strong>, portador(a) do CPF/CNPJ: ${cli.cpf_cnpj || '________________'}, residente e domiciliado(a) na ${enderecoCompleto}. Contato: ${cli.wpp || '________________'}.</p>
                 </div>
 
-                <div style="margin-bottom: 20px; page-break-inside: avoid;">
-                    <h2 style="font-size: 14px; font-weight: bold; margin: 0 0 10px 0; text-transform: uppercase; background: #f0f0f0; padding: 5px;">CLÁUSULA 1ª - DO OBJETO DA LOCAÇÃO</h2>
-                    <ul style="margin: 0; padding-left: 25px;">
-                        <li style="margin-bottom: 5px;"><strong>Modelo/Cor:</strong> ${vei.modelo || '___________________'}</li>
-                        <li style="margin-bottom: 5px;"><strong>Placa:</strong> ${vei.placa || '_________'}</li>
-                        <li style="margin-bottom: 5px;"><strong>RENAVAM:</strong> ${vei.renavam || '___________________'}</li>
+                <div style="margin-bottom: 10px;">
+                    <h2 style="font-size: 12px; font-weight: bold; margin: 0 0 4px 0; text-transform: uppercase; background: #f0f0f0; padding: 3px;">CLÁUSULA 1ª - DO OBJETO DA LOCAÇÃO</h2>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li style="margin-bottom: 2px;"><strong>Modelo/Cor:</strong> ${vei.modelo || '___________________'}</li>
+                        <li style="margin-bottom: 2px;"><strong>Placa:</strong> ${vei.placa || '_________'}</li>
+                        <li style="margin-bottom: 2px;"><strong>RENAVAM:</strong> ${vei.renavam || '___________________'}</li>
                         <li style="margin-bottom: 0;"><strong>Vistoria Inicial:</strong> Veículo entregue com <strong>${combustivelSaida} traço(s) de combustível</strong>, higienizado e inspecionado no sistema.</li>
                     </ul>
                 </div>
 
-                <div style="margin-bottom: 20px; page-break-inside: avoid;">
-                    <h2 style="font-size: 14px; font-weight: bold; margin: 0 0 10px 0; text-transform: uppercase; background: #f0f0f0; padding: 5px;">CLÁUSULA 2ª - DA FINALIDADE E USO</h2>
+                <div style="margin-bottom: 10px;">
+                    <h2 style="font-size: 12px; font-weight: bold; margin: 0 0 4px 0; text-transform: uppercase; background: #f0f0f0; padding: 3px;">CLÁUSULA 2ª - DA FINALIDADE E USO</h2>
                     <p style="margin: 0;">O veículo destina-se a uso exclusivo do LOCATÁRIO, restrito à área urbana e rural limítrofe do município de Porto Velho - RO. É expressamente proibido ceder, emprestar ou sublocar a terceiros, sob pena de apreensão imediata do bem e rescisão contratual.</p>
                 </div>
 
-                <div style="margin-bottom: 20px; page-break-inside: avoid;">
-                    <h2 style="font-size: 14px; font-weight: bold; margin: 0 0 10px 0; text-transform: uppercase; background: #f0f0f0; padding: 5px;">CLÁUSULA 3ª - DO PRAZO E DEVOLUÇÃO</h2>
+                <div style="margin-bottom: 10px;">
+                    <h2 style="font-size: 12px; font-weight: bold; margin: 0 0 4px 0; text-transform: uppercase; background: #f0f0f0; padding: 3px;">CLÁUSULA 3ª - DO PRAZO E DEVOLUÇÃO</h2>
                     <p style="margin: 0;">O presente contrato tem vigência a partir de <strong>${dataInicioStr}</strong> com encerramento fixado para <strong>${dataFimStr}</strong>. A não devolução do bem no prazo estipulado configura Apropriação Indébita (Art. 168 do Código Penal).</p>
                 </div>
 
-                <div style="margin-bottom: 20px; page-break-inside: avoid;">
-                    <h2 style="font-size: 14px; font-weight: bold; margin: 0 0 10px 0; text-transform: uppercase; background: #f0f0f0; padding: 5px;">CLÁUSULA 4ª - DOS VALORES E GARANTIAS</h2>
-                    <p style="margin: 0 0 10px 0;">O LOCATÁRIO pagará a importância de <strong>${utils.formatMoney(c.valor)}</strong> pela locação. Concorda expressamente com:</p>
-                    <ol style="margin: 0; padding-left: 25px;">
-                        <li style="margin-bottom: 5px;"><strong>Atraso na Devolução:</strong> Multa imediata de R$ 50,00, acrescida de R$ 50,00 por cada hora excedente ao horário fixado.</li>
-                        <li style="margin-bottom: 5px;"><strong>Combustível e Limpeza:</strong> Taxa de R$ 50,00 por traço faltante de gasolina. Devolução suja gera taxa de lavagem de R$ 50,00 a R$ 150,00.</li>
-                        <li style="margin-bottom: 5px;"><strong>Caução:</strong> Valor retido de <strong>${utils.formatMoney(c.caucao)}</strong>, devolvido na vistoria isenta de danos.</li>
+                <div style="margin-bottom: 10px;">
+                    <h2 style="font-size: 12px; font-weight: bold; margin: 0 0 4px 0; text-transform: uppercase; background: #f0f0f0; padding: 3px;">CLÁUSULA 4ª - DOS VALORES E GARANTIAS</h2>
+                    <p style="margin: 0 0 4px 0;">O LOCATÁRIO pagará a importância de <strong>${utils.formatMoney(c.valor)}</strong> pela locação. Concorda expressamente com:</p>
+                    <ol style="margin: 0; padding-left: 20px;">
+                        <li style="margin-bottom: 2px;"><strong>Atraso na Devolução:</strong> Multa imediata de R$ 50,00, acrescida de R$ 50,00 por cada hora excedente ao horário fixado.</li>
+                        <li style="margin-bottom: 2px;"><strong>Combustível e Limpeza:</strong> Taxa de R$ 50,00 por traço faltante de gasolina. Devolução suja gera taxa de lavagem de R$ 50,00 a R$ 150,00.</li>
+                        <li style="margin-bottom: 2px;"><strong>Caução:</strong> Valor retido de <strong>${utils.formatMoney(c.caucao)}</strong>, devolvido na vistoria isenta de danos.</li>
                         <li style="margin-bottom: 0;"><strong>Garantia Total:</strong> Assinatura de Promissória no valor venal do veículo (FIPE: ${utils.formatMoney(vei.fipe)}), executável em caso de roubo, furto ou perda total.</li>
                     </ol>
                 </div>
 
-                <div style="margin-bottom: 20px; page-break-inside: avoid;">
-                    <h2 style="font-size: 14px; font-weight: bold; margin: 0 0 10px 0; text-transform: uppercase; background: #f0f0f0; padding: 5px;">CLÁUSULA 5ª - RESPONSABILIDADE CIVIL E CRIMINAL</h2>
-                    <p style="margin: 0 0 10px 0;">O LOCATÁRIO assume exclusiva responsabilidade por quaisquer danos materiais, pessoais, morais ou a terceiros. Em caso de acidente, incêndio, furto ou roubo, o LOCATÁRIO arcará com 100% dos custos de reparo em oficina de confiança da LOCADORA.</p>
+                <div style="margin-bottom: 10px;">
+                    <h2 style="font-size: 12px; font-weight: bold; margin: 0 0 4px 0; text-transform: uppercase; background: #f0f0f0; padding: 3px;">CLÁUSULA 5ª - RESPONSABILIDADE CIVIL E CRIMINAL</h2>
+                    <p style="margin: 0 0 4px 0;">O LOCATÁRIO assume exclusiva responsabilidade por quaisquer danos materiais, pessoais, morais ou a terceiros. Em caso de acidente, incêndio, furto ou roubo, o LOCATÁRIO arcará com 100% dos custos de reparo em oficina de confiança da LOCADORA.</p>
                     <p style="margin: 0;">Parágrafo Único: O LOCATÁRIO também concorda em indenizar a LOCADORA pelas diárias correspondentes ao período em que o veículo ficar imobilizado na oficina (lucros cessantes).</p>
                 </div>
 
-                <div style="margin-bottom: 20px; page-break-inside: avoid;">
-                    <h2 style="font-size: 14px; font-weight: bold; margin: 0 0 10px 0; text-transform: uppercase; background: #f0f0f0; padding: 5px;">CLÁUSULA 6ª - DAS INFRAÇÕES DE TRÂNSITO</h2>
+                <div style="margin-bottom: 10px;">
+                    <h2 style="font-size: 12px; font-weight: bold; margin: 0 0 4px 0; text-transform: uppercase; background: #f0f0f0; padding: 3px;">CLÁUSULA 6ª - DAS INFRAÇÕES DE TRÂNSITO</h2>
                     <p style="margin: 0;">O LOCATÁRIO autoriza a indicação do seu nome e CNH como condutor infrator para toda e qualquer multa. Despesas com guincho, pátio do DETRAN e taxas correrão por conta do LOCATÁRIO.</p>
                 </div>
 
-                <div style="page-break-inside: avoid; margin-top: 40px;">
-                    <p style="text-align: right; margin: 0 0 50px 0; font-weight: bold;">Porto Velho - RO, ${dataAtualExtenso} às ${horaAtual}.</p>
+                <div style="margin-top: 20px;">
+                    <p style="text-align: right; margin: 0 0 35px 0; font-weight: bold;">Porto Velho - RO, ${dataAtualExtenso} às ${horaAtual}.</p>
 
                     <div style="width: 100%; display: flex; justify-content: space-between; text-align: center;">
                         <div style="width: 45%;">
-                            <div style="border-top: 1px solid #000; padding-top: 8px;">
+                            <div style="border-top: 1px solid #000; padding-top: 5px;">
                                 <strong>VANDO MOTOS LOCADORA LTDA</strong><br>(Locador)
                             </div>
                         </div>
                         <div style="width: 45%;">
-                            <div style="border-top: 1px solid #000; padding-top: 8px;">
+                            <div style="border-top: 1px solid #000; padding-top: 5px;">
                                 <strong style="text-transform:uppercase;">${cli.nome || 'LOCATÁRIO'}</strong><br>(Locatário)
                             </div>
                         </div>
@@ -448,12 +455,11 @@ export function renderContratos(container) {
         `;
 
         const opt = {
-            margin:       15,
+            margin:       10, // Margem diminuída de 15 para 10 para dar mais espaço de respiro
             filename:     `Contrato_${cli.nome.replace(/\s+/g, '_')}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:    { mode: ['css', 'avoid-all'] }
+            html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } 
         };
 
         html2pdf().set(opt).from(pdfContainer).toPdf().get('pdf').then(function (pdf) {
@@ -461,7 +467,8 @@ export function renderContratos(container) {
             for (let i = 1; i <= totalPages; i++) {
                 pdf.setPage(i);
                 if(watermarkBase64) {
-                    const size = 45; 
+                    // Logótipo aumentado para 65mm (6.5 centímetros)
+                    const size = 65; 
                     const x = (210 - size) / 2;
                     const y = (297 - size) / 2;
                     pdf.addImage(watermarkBase64, 'PNG', x, y, size, size);
