@@ -3,13 +3,22 @@ import { db, saveDB, utils } from './db.js';
 export function renderClientes(container) {
     container.innerHTML = `
         <div class="flex flex-col h-full fade-enter">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                 <div class="relative w-full md:max-w-md">
                     <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     <input type="text" id="busca-clientes" placeholder="Buscar por código, nome, CPF/CNPJ ou WhatsApp..." class="w-full pl-10 pr-4 py-2 border border-gray-200 text-sm focus:ring-0 outline-none transition shadow-sm">
                 </div>
                 <button id="btn-novo-cliente" class="w-full md:w-auto justify-center bg-brand-dark hover:bg-black text-white px-5 py-3 md:py-2.5 font-bold text-sm flex items-center gap-2 border border-gray-800 transition-all shadow-hard">
                     <i class="ph-bold ph-user-plus text-brand-main text-lg"></i> Cadastrar Cliente
+                </button>
+            </div>
+
+            <div class="flex gap-2 mb-4 border-b border-gray-200">
+                <button id="btn-filtro-todos" class="px-4 py-2 text-xs font-black uppercase tracking-widest border-b-2 border-brand-dark text-brand-dark transition-colors">
+                    Todos os Clientes
+                </button>
+                <button id="btn-filtro-blacklist" class="px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 border-transparent text-gray-500 hover:text-red-600 transition-colors flex items-center gap-1">
+                    <i class="ph-fill ph-warning-octagon text-sm"></i> Blacklist <span id="badge-blacklist-count" class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded-sm ml-1 text-[10px] font-black shadow-sm">0</span>
                 </button>
             </div>
 
@@ -31,7 +40,7 @@ export function renderClientes(container) {
                 </div>
                 <div id="clientes-empty" class="hidden flex-col items-center justify-center py-16 text-center">
                     <i class="ph ph-users text-5xl text-gray-300 mb-3"></i>
-                    <p class="text-sm text-gray-500 font-bold uppercase tracking-wider">Base de clientes vazia na Nuvem</p>
+                    <p class="text-sm text-gray-500 font-bold uppercase tracking-wider" id="txt-empty-state">Base de clientes vazia na Nuvem</p>
                 </div>
             </div>
         </div>
@@ -237,6 +246,7 @@ export function renderClientes(container) {
 
     const tbody = document.getElementById('tb-clientes');
     const emptyState = document.getElementById('clientes-empty');
+    const txtEmptyState = document.getElementById('txt-empty-state');
     const modal = document.getElementById('modal-cliente');
     const modalPanel = document.getElementById('modal-cliente-panel');
     const form = document.getElementById('form-cliente');
@@ -253,7 +263,26 @@ export function renderClientes(container) {
     const conTabHistorico = document.getElementById('conteudo-tab-historico');
     const footerActions = document.getElementById('modal-actions-footer');
 
-    // Lógica do Blacklist
+    // FILTRO DE ABAS (TODOS VS BLACKLIST)
+    let filtroAtual = 'todos';
+    const btnFiltroTodos = document.getElementById('btn-filtro-todos');
+    const btnFiltroBlacklist = document.getElementById('btn-filtro-blacklist');
+    const badgeBlacklistCount = document.getElementById('badge-blacklist-count');
+
+    btnFiltroTodos.addEventListener('click', () => {
+        filtroAtual = 'todos';
+        btnFiltroTodos.className = "px-4 py-2 text-xs font-black uppercase tracking-widest border-b-2 border-brand-dark text-brand-dark transition-colors";
+        btnFiltroBlacklist.className = "px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 border-transparent text-gray-500 hover:text-red-600 transition-colors flex items-center gap-1";
+        atualizarTabela();
+    });
+
+    btnFiltroBlacklist.addEventListener('click', () => {
+        filtroAtual = 'blacklist';
+        btnFiltroBlacklist.className = "px-4 py-2 text-xs font-black uppercase tracking-widest border-b-2 border-red-600 text-red-600 transition-colors flex items-center gap-1";
+        btnFiltroTodos.className = "px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 border-transparent text-gray-500 hover:text-brand-dark transition-colors";
+        atualizarTabela();
+    });
+
     const checkBlacklist = document.getElementById('c-blacklist');
     const inputMotivoBL = document.getElementById('c-blacklist-motivo');
 
@@ -414,31 +443,44 @@ export function renderClientes(container) {
         const termo = inputBusca.value.toLowerCase();
         tbody.innerHTML = '';
         
-        const filtrados = db.clientes.filter(c => 
-            c.nome.toLowerCase().includes(termo) || 
-            (c.codigo && c.codigo.toLowerCase().includes(termo)) || 
-            c.cpf_cnpj.includes(termo) || 
-            c.wpp.includes(termo)
-        );
+        // Atualiza a contagem da Blacklist na aba
+        const qtBlacklist = db.clientes.filter(c => c.blacklist).length;
+        badgeBlacklistCount.innerText = qtBlacklist;
+        
+        let filtrados = db.clientes.filter(c => {
+            const matchTermo = c.nome.toLowerCase().includes(termo) || 
+                               (c.codigo && c.codigo.toLowerCase().includes(termo)) || 
+                               c.cpf_cnpj.includes(termo) || 
+                               c.wpp.includes(termo);
+            
+            // Aplica o filtro da Aba (Todos ou apenas Blacklist)
+            if (filtroAtual === 'blacklist') {
+                return matchTermo && c.blacklist;
+            }
+            return matchTermo;
+        });
 
         if (filtrados.length === 0) {
             emptyState.classList.remove('hidden');
             emptyState.classList.add('flex');
+            txtEmptyState.innerText = filtroAtual === 'blacklist' 
+                ? "Nenhum cliente na lista de bloqueados." 
+                : "Base de clientes vazia na Nuvem";
         } else {
             emptyState.classList.add('hidden');
             emptyState.classList.remove('flex');
 
             filtrados.forEach(c => {
-                // Selo Visual da Blacklist
-                const nomeFormatado = c.blacklist 
-                    ? `<span class="text-gray-400 line-through">${c.nome}</span> <span class="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 ml-1 uppercase tracking-widest rounded-sm shadow-sm inline-flex items-center gap-1"><i class="ph-bold ph-warning-octagon"></i> Blacklist</span>` 
+                const isBlacklisted = c.blacklist;
+                const nomeFormatado = isBlacklisted 
+                    ? `<span class="text-gray-400 line-through">${c.nome}</span> <div class="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 mt-1 uppercase tracking-widest rounded-sm shadow-sm inline-flex items-center gap-1 w-max" title="Motivo: ${c.blacklist_motivo}"><i class="ph-bold ph-warning-octagon"></i> Blacklist</div>` 
                     : `<span class="text-gray-900">${c.nome}</span>`;
 
                 const tr = document.createElement('tr');
-                tr.className = `hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors ${c.blacklist ? 'bg-red-50/20' : ''}`;
+                tr.className = `hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors ${isBlacklisted ? 'bg-red-50/30' : ''}`;
                 tr.innerHTML = `
                     <td class="px-6 py-4 font-mono font-bold text-brand-hover">${c.codigo || '---'}</td>
-                    <td class="px-6 py-4 font-bold text-gray-900">${nomeFormatado}</td>
+                    <td class="px-6 py-4 font-bold text-gray-900 flex flex-col">${nomeFormatado}</td>
                     <td class="px-6 py-4"><span class="text-xs px-1.5 py-0.5 font-bold bg-gray-900 text-white">${c.tipo}</span></td>
                     <td class="px-6 py-4 text-gray-600 font-mono text-xs">${c.cpf_cnpj}</td>
                     <td class="px-6 py-4 text-gray-700">${c.wpp}</td>
@@ -467,7 +509,6 @@ export function renderClientes(container) {
                 document.getElementById('c-codigo-gerado').value = '';
                 document.getElementById('modal-cliente-code').innerText = "Código: Gerado automaticamente";
                 
-                // Limpa Blacklist Visual
                 checkBlacklist.checked = false;
                 inputMotivoBL.value = '';
                 inputMotivoBL.disabled = true;
@@ -514,7 +555,6 @@ export function renderClientes(container) {
             ref_fone_3: document.getElementById('c-ref-fone-3').value,
             img_cnh: imgCnhBase64,
             img_residencia: imgResBase64,
-            // Grava os dados da Blacklist
             blacklist: checkBlacklist.checked,
             blacklist_motivo: inputMotivoBL.value
         };
@@ -557,7 +597,6 @@ export function renderClientes(container) {
             document.getElementById('c-codigo-gerado').value = c.codigo || '';
             document.getElementById('modal-cliente-code').innerText = `Código: ${c.codigo || 'Legado'}`;
             
-            // Carrega os dados da Blacklist
             checkBlacklist.checked = c.blacklist || false;
             inputMotivoBL.value = c.blacklist_motivo || '';
             inputMotivoBL.disabled = !(c.blacklist || false);
