@@ -1,5 +1,5 @@
-// MUDAMOS PARA V13 para aplicar Recibos Térmicos no Financeiro e Fila de Espera em Contratos
-const CACHE_NAME = 'vandomotos-pwa-v13'; 
+ // MUDAMOS PARA V14 para aplicar o Contrato Compacto de Folha Única e Logo a 6.5cm
+const CACHE_NAME = 'vandomotos-pwa-v14'; 
 
 const ASSETS = [
     './',
