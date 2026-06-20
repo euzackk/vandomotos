@@ -2,9 +2,9 @@ import { db, saveDB, utils } from './db.js';
 
 export function renderFinanceiro(container) {
     container.innerHTML = `
-        <div class="flex flex-col h-full fade-enter">
+        <div class="flex flex-col min-h-full fade-enter">
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 shrink-0">
                 <div class="bg-white p-5 border border-gray-200 shadow-soft relative overflow-hidden group">
                     <div class="absolute -right-4 -top-4 w-16 h-16 bg-blue-50 rounded-full group-hover:scale-150 transition-transform"></div>
                     <p class="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1 relative z-10"><i class="ph ph-wallet"></i> Saldo em Caixa</p>
@@ -22,9 +22,9 @@ export function renderFinanceiro(container) {
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 lg:overflow-hidden pb-4 lg:pb-0">
                 
-                <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden min-h-[300px]">
+                <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden h-[450px] lg:h-auto">
                     <div class="bg-gray-50 border-b border-gray-200 px-4 py-4 flex justify-between items-center shrink-0">
                         <h3 class="font-bold text-gray-800 flex items-center gap-2 uppercase tracking-wider text-xs"><i class="ph-fill ph-bell-ringing text-brand-hover text-base"></i> Painel de Cobranças</h3>
                         <span class="text-[10px] bg-gray-900 text-white px-2 py-1 font-bold tracking-widest uppercase" id="qtd-cobrancas">0 ATIVAS</span>
@@ -32,7 +32,7 @@ export function renderFinanceiro(container) {
                     <div class="p-3 md:p-5 flex-1 overflow-y-auto space-y-3 bg-white custom-scroll" id="lista-receber"></div>
                 </div>
 
-                <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden min-h-[300px]">
+                <div class="bg-white border border-gray-200 shadow-soft flex flex-col overflow-hidden h-[450px] lg:h-auto">
                     <div class="bg-gray-50 border-b border-gray-200 px-4 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
                         <h3 class="font-bold text-gray-800 flex items-center gap-2 uppercase tracking-wider text-xs"><i class="ph-fill ph-list-numbers text-gray-400 text-base"></i> Livro Caixa</h3>
                         <div class="flex gap-2 w-full sm:w-auto">
@@ -202,10 +202,8 @@ export function renderFinanceiro(container) {
                     tagStatus = `<span class="text-[9px] bg-brand-hover text-black px-1.5 py-0.5 font-bold uppercase tracking-wider shadow-sm rounded-sm">Vence Hoje</span>`;
                 }
 
-                // ESTRUTURA RESPONSIVA QUE IMPEDE O ESMAGAMENTO DOS BOTÕES
                 listaReceber.innerHTML += `
                     <div class="border ${statusCor} p-3 md:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all hover:shadow-soft group">
-                        
                         <div class="flex items-start gap-3 w-full sm:w-auto">
                             <div class="mt-0.5 shrink-0">${iconeStatus}</div>
                             <div class="flex-1">
@@ -219,15 +217,13 @@ export function renderFinanceiro(container) {
                                 </div>
                             </div>
                         </div>
-                        
                         <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-3 sm:pt-0 border-t border-gray-200/50 sm:border-0 mt-1 sm:mt-0 gap-2">
                             <span class="font-black text-gray-900 font-mono text-lg sm:text-base">${utils.formatMoney(c.valor)}</span>
                             <div class="flex gap-2 w-full sm:w-auto justify-end">
                                 <button class="btn-wpp-cobranca flex-1 sm:flex-none justify-center text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 hover:bg-emerald-500 hover:text-white px-2 sm:px-3 py-2 sm:py-1.5 transition border border-emerald-200 shadow-sm flex items-center gap-1 rounded-sm" data-id="${c.id}" title="Cobrar via WhatsApp">
                                     <i class="ph-bold ph-whatsapp text-sm"></i> WPP
                                 </button>
-                                <button class="btn-abrir-baixa flex-1 sm:flex-none justify-center text-[10px] font-black uppercase tracking-widest bg-gray-900 text-white px-3 sm:px-4 py-2 sm:py-1.5 hover:bg-black transition shadow-hard border border-gray-900 rounded-sm" 
-                                    data-id="${c.id}" data-valor="${c.valor}" data-nome="${cli.nome}">
+                                <button class="btn-abrir-baixa flex-1 sm:flex-none justify-center text-[10px] font-black uppercase tracking-widest bg-gray-900 text-white px-3 sm:px-4 py-2 sm:py-1.5 hover:bg-black transition shadow-hard border border-gray-900 rounded-sm" data-id="${c.id}" data-valor="${c.valor}" data-nome="${cli.nome}">
                                     Liquidar
                                 </button>
                             </div>
