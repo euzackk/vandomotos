@@ -1,5 +1,5 @@
-// MUDAMOS PARA V12 para adicionar a aba dedicada de filtro da Blacklist
-const CACHE_NAME = 'vandomotos-pwa-v12'; 
+// MUDAMOS PARA V13 para aplicar Recibos Térmicos no Financeiro e Fila de Espera em Contratos
+const CACHE_NAME = 'vandomotos-pwa-v13'; 
 
 const ASSETS = [
     './',
